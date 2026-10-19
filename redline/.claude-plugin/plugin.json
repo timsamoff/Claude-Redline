@@ -1,0 +1,5 @@
+{
+  "name": "redline",
+  "version": "0.0.1",
+  "description": "Probe: logs Claude Code rate-limit windows and fires a toast in VS Code sessions. Writes no files."
+}
