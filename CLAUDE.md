@@ -10,6 +10,7 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 ## Naming
 - The project, repo and folder are Claude-Redline. The plugin ID in `plugin.json` is `redline` and must stay that: `claude plugin validate` rejects third-party plugin names that start with `claude-`.
 - Plugin ID `redline` is permanent. Renaming breaks existing installs. `displayName` can differ.
+- The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading. `displayName` does not change any of them (checked live, 2026-10-28).
 - The marketplace `name` is the part after `@` in an install ID. It must not be an official name or resemble one. Suggested: `timsamoff-tools`.
 - The entry `name` in `marketplace.json` must equal the `name` in `plugin.json`.
 
