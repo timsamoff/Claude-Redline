@@ -1,17 +1,13 @@
 # Handoff
 
 ## Current task and status
-A full code review's 11 findings are fixed and pushed (`562c78f`). Tests (22), the validator, the gate checks and the integration suite (122 scenarios) pass. Three behavior changes are not yet seen live.
+Redline is pushed (`01c297e`) and the tree is clean. The code review's findings are fixed, the settings text is shared between `plugin.json` and the README table, and TODO D4 and P3 are closed. Still not seen live: one toast (not two) when a single window crosses a level, no repeat toast after a reload or in a second window, and a weekday on a reset after midnight.
 
 ## Files touched
-- `claude-redline/hooks/register.js`: only the window with news gets a toast; state saved with `$.store`; weekday for any other-day reset; `%` accepted in levels; `USERPROFILE` first; percents rounded down; late-reading guard.
-- `claude-redline/.claude-plugin/plugin.json`: `version` removed, `displayName` "Claude-Redline", descriptions updated.
-- `.claude-plugin/marketplace.json`, `README.md`, `DESIGN.md`, `CLAUDE.md`: updated to match, including the validator quote.
-- `scripts/sentinel/lib/consistency.mjs`: K3 accepts one `[segment(...)]` per toast; dead demo branch removed. Integration anchors updated.
-- `tests/redline.test.mjs`: 7 new tests. `assets/cr-screenshot.png`: Tim's edit.
+None pending. The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading, and `displayName` changes none of them (recorded in `CLAUDE.md`).
 
 ## Next step
-Tim checks live after `/reload-plugins`: one toast (not two) when a single window crosses a level, no repeat toasts after a reload or in a second window, and a weekday on a reset after midnight. Then start TODO D4 (review the settings wording).
+Check the three behaviors above live, then start TODO P1: test the marketplace install from a fresh clone. It is the one sharing path nobody has run, so it is the biggest risk before the project is shared widely.
 
 ## Open questions
 - Keep "2.1.299" as the minimum version in the README? It is unverified.
