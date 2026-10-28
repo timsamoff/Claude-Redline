@@ -1,6 +1,6 @@
 # Handoff: Claude-Redline
 
-Updated 2026-10-28, at the end of the Sentinel design and code quality audit. Last pushed commit: 4a1f4a8. Everything listed below is uncommitted.
+Updated 2026-10-28, at the end of the Sentinel design and code quality audit. Last pushed commit: 5336ebe. Everything below is committed and pushed.
 
 ## 1. Current task and status
 The audit is finished and its code fixes are applied. `register.js` now has one set of duration constants, named threshold constants (`NOTICE_AT`, `RESET_TIME_AT`, `ALERT_AT`), a shared `readWindow` helper, and `segment()` and `failureText()` helpers that join icon, label and percent with non-breaking spaces. A 63-run fake-data harness showed identical toast text, timeouts and written files before and after, apart from the intended non-breaking spaces. `claude plugin validate` passes.
@@ -21,7 +21,7 @@ Sentinel progress: prompt 00 (discovery) and prompt 01 (design and code quality 
 - `prod/claude-redline-icon-512.png`: new, a 512 px PNG rendered from the SVG with ImageMagick. The README's first line uses it. `prod/` otherwise holds Tim's Illustrator source and SVG. An Illustrator rename to `_01` seen earlier was undone.
 
 ## 3. Next steps
-1. Commit with Tim's yes. Suggested: three commits. One for `register.js`. One for the docs (`.gitignore`, `CLAUDE.md`, `DESIGN.md`, `HANDOFF.md`). One for the publishing files (`README.md`, `LICENSE`, `.claude-plugin/marketplace.json`, `prod/claude-redline-icon-512.png`, and the `plugin.json` change). Nothing is pushed without his yes.
+1. Done: committed and pushed in three commits on 2026-10-28. `6aed80a` is the `register.js` refactor, `25bf846` the docs, and `5336ebe` the publishing files (README, MIT license, marketplace file, PNG icon, `displayName`).
 2. Reload VS Code and check the toast wrapping, a real threshold toast and the picker (TODO P3, P4).
 3. Publish: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` now exist and validate. Still to do: manifest `author`, `homepage` and `repository`, and a test of the marketplace install from a fresh clone. The PNG exists in `prod/`, but the directory validator only looks inside the plugin folder, so a copy at `claude-redline/.claude-plugin/icon.png` (or an `icon` field in `plugin.json`) is still needed. See `Sentinel-Notes/submission-readiness-design-brief.md`.
 4. Optional: rename the project folder to `Claude-Redline` with `scratch/rename-project.ps1` (local, git-ignored). It runs as a dry run by default. Use `-Apply` from a PowerShell window outside the folder, after closing VS Code and any Claude session for it. It renames the folder, copies Claude's history folder to the new name, and updates the plugin path in `~/.claude/settings.json`. Only the dry run has been tested.
@@ -29,7 +29,6 @@ Sentinel progress: prompt 00 (discovery) and prompt 01 (design and code quality 
 6. Next audit prompt: `Sentinel-Prompts/02-integration-audit.md`.
 
 ## 4. Open questions for Tim
-- How to group the commits, and whether to push.
 - Whether `.gitignore` should skip Illustrator temp files (one appeared in `prod/` earlier).
 - Whether to omit `version`, whether the preview option ships publicly, and the repo's visibility (not checked). The license is decided: MIT.
 
