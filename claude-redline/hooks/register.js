@@ -1,11 +1,9 @@
 // Claude-Redline: writes ~/.claude/usage.json and shows usage toasts in VS Code sessions.
 // Routine results go to the debug log, and CLAUDE.md and DESIGN.md hold the format and toast rules.
 
-// Toast levels, in percent used. The icons and the rules below follow these.
-const NOTICE_AT = 70
-const RESET_TIME_AT = 90
-const ALERT_AT = 95
-const THRESHOLDS = [NOTICE_AT, RESET_TIME_AT, ALERT_AT]
+// Default toast levels, in percent used. Users can replace them with the levels setting.
+const DEFAULT_LEVELS = [70, 90, 95]
+const MAX_LEVELS = 5
 const WINDOWS = [['five_hour', '5h'], ['seven_day', '7d']]
 const GREEN = '\u{1F7E2}'
 const YELLOW = '\u{1F7E1}'
@@ -13,6 +11,8 @@ const RED = '\u{1F534}'
 const WARN = '\u26A0\uFE0F'
 const NBSP = '\u00A0'
 const SEPARATOR = ' | '
+const HOUR_MS = 3600000
+const DAY_MS = 24 * HOUR_MS
 
 // Toast durations in seconds. Keep in step with userConfig in plugin.json.
 const DEFAULT_TOAST_SECONDS = 6
@@ -20,11 +20,12 @@ const DEFAULT_ALERT_SECONDS = 10
 const MIN_SECONDS = 1
 const MAX_SECONDS = 120
 
-// Per window: { ms: reset time in ms, fired: highest threshold already toasted }.
+// Per window: { ms: reset time in ms, fired: highest level already toasted }.
 const state = { five_hour: null, seven_day: null }
 let writeFailed = false
 
-// Toast durations in ms. Replaced from userConfig in register().
+// Settings in effect. Replaced from userConfig in register().
+let levels = DEFAULT_LEVELS
 let normalMs = DEFAULT_TOAST_SECONDS * 1000
 let alertMs = DEFAULT_ALERT_SECONDS * 1000
 
@@ -34,6 +35,13 @@ function secondsToMs(value, fallbackSeconds) {
   return Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS) * 1000
 }
 
+// Reads the levels setting ("70, 90, 95"): sorted, unique, 1 to 100. Falls back to the defaults if none is valid.
+function parseLevels(value) {
+  const raw = Array.isArray(value) ? value : String(value == null ? '' : value).split(/[\s,;]+/)
+  const nums = [...new Set(raw.map(Number).filter((n) => Number.isFinite(n) && n > 0 && n <= 100))].sort((a, b) => a - b)
+  return nums.length ? nums.slice(-MAX_LEVELS) : DEFAULT_LEVELS
+}
+
 // Preview: when the previewToasts option is on, shows each toast style once on the
 // first turn after a restart, so the look and timing can be checked without waiting
 // for a real threshold. Set from userConfig in register().
@@ -41,14 +49,17 @@ let demoOn = false
 let demoShown = false
 
 function icon(pct) {
-  if (pct >= ALERT_AT) return RED
-  if (pct >= NOTICE_AT) return YELLOW
+  if (pct >= levels[levels.length - 1]) return RED
+  if (pct >= levels[0]) return YELLOW
   return GREEN
 }
 
+// Local reset time, with the weekday when it is more than a day away.
 function resetTime(ms) {
   try {
-    return new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    const opts = { hour: 'numeric', minute: '2-digit' }
+    if (ms - Date.now() > DAY_MS) opts.weekday = 'short'
+    return new Date(ms).toLocaleString([], opts)
   } catch (err) {
     return ''
   }
@@ -77,6 +88,16 @@ function segment(pct, label, note) {
 
 function failureText(err) {
   return WARN + ' usage.json write failed: ' + String(err)
+}
+
+// The text the /redline command returns.
+function summary(rateLimits) {
+  const parts = []
+  for (const [kind, label] of WINDOWS) {
+    const w = readWindow(rateLimits, kind)
+    if (w) parts.push(segment(w.pct, label, Number.isFinite(w.ms) ? ' resets ' + resetTime(w.ms) : ''))
+  }
+  return parts.length ? parts.join(SEPARATOR) : 'No usage data yet. It appears after the first response, on Pro and Max plans.'
 }
 
 async function homeDir($) {
@@ -126,13 +147,13 @@ function notify($, rateLimits) {
       show = true
     }
 
-    const crossed = THRESHOLDS.filter((t) => w.pct >= t)
+    const crossed = levels.filter((t) => w.pct >= t)
     const level = crossed.length ? crossed[crossed.length - 1] : 0
     if (level > fired) {
       fired = level
       show = true
-      if (level >= RESET_TIME_AT && Number.isFinite(w.ms)) note += ' resets ' + resetTime(w.ms)
-      if (level >= ALERT_AT) longest = alertMs
+      if (Number.isFinite(w.ms)) note += ' resets ' + resetTime(w.ms)
+      if (level >= levels[levels.length - 1]) longest = alertMs
     }
 
     state[kind] = { ms: w.ms, fired }
@@ -143,13 +164,14 @@ function notify($, rateLimits) {
 }
 
 function demo($) {
-  const soon = ' resets ' + resetTime(Date.now() + 3600000)
+  const low = levels[0]
+  const high = levels[levels.length - 1]
+  const soon = ' resets ' + resetTime(Date.now() + HOUR_MS)
   const sevenDay = segment(32, '7d')
   const samples = [
-    [segment(41, '5h') + SEPARATOR + sevenDay, normalMs],
-    [segment(72, '5h') + SEPARATOR + sevenDay, normalMs],
-    [segment(91, '5h', soon) + SEPARATOR + sevenDay, normalMs],
-    [segment(96, '5h', soon) + SEPARATOR + sevenDay, alertMs],
+    [segment(Math.max(low - 1, 0), '5h') + SEPARATOR + sevenDay, normalMs],
+    [segment(low, '5h', soon) + SEPARATOR + sevenDay, normalMs],
+    [segment(high, '5h', soon) + SEPARATOR + sevenDay, alertMs],
     [segment(3, '5h', ' (window reset)') + SEPARATOR + sevenDay, normalMs],
     [failureText(new Error('EACCES')), alertMs],
   ]
@@ -185,7 +207,25 @@ async function handle($, usage, label) {
 export function register(on, options) {
   normalMs = secondsToMs(options && options.toastSeconds, DEFAULT_TOAST_SECONDS)
   alertMs = secondsToMs(options && options.alertToastSeconds, DEFAULT_ALERT_SECONDS)
+  levels = parseLevels(options && options.levels)
   demoOn = options != null && ['on', 'true'].includes(String(options.previewToasts).toLowerCase())
+
+  on('session.start', async ($, e, next) => {
+    try {
+      await $.command.register({ name: 'redline', description: 'Show your current 5-hour and 7-day usage' })
+    } catch (err) {
+      $.ui.log('redline[start] could not add /redline: ' + String(err), { to: 'debug' })
+    }
+    return next(e)
+  })
+
+  on('command.run', { command: 'redline' }, async ($) => {
+    try {
+      return { text: summary((await $.session.usage()).rateLimits) }
+    } catch (err) {
+      return { text: 'Could not read usage: ' + String(err) }
+    }
+  })
 
   on('session.measure', async ($, e, next) => {
     try {

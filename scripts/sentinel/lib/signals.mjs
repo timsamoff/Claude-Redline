@@ -26,7 +26,7 @@ export function registerSignals(src) {
     bodyKeys: uniq([...body.matchAll(/^\s{4}([a-z_]+):/gm)].map((m) => m[1])),
     writePath: ((code.match(/const path = (.+)$/m) || [])[1] || '').trim(),
     surfaceRule: ((code.match(/surfaces\.includes\(([^)]*)\)/) || [])[1] || '').trim(),
-    thresholds: (constants.THRESHOLDS || '').split(',').filter((s) => s.replace(/[\[\]\s]/g, '')).length,
+    thresholds: (constants.DEFAULT_LEVELS || '').split(',').filter((s) => s.replace(/[\[\]\s]/g, '')).length,
     toastCalls: (code.match(/\$\.ui\.toast\(/g) || []).length,
     helpers,
   }
@@ -94,7 +94,7 @@ export function gateReasons({ before, after, changes, rules }) {
   const consts = constantChanges(rb, ra)
   if (consts.length) {
     push(claude, `named constants (${consts.join(', ')})`, P.register, `const ${consts[0]} `)
-    if (consts.some((n) => /_AT$|^THRESHOLDS$/.test(n))) push(readme, 'the toast levels', P.register, `const ${consts.find((n) => /_AT$|^THRESHOLDS$/.test(n))} `)
+    if (consts.some((n) => /^DEFAULT_LEVELS$/.test(n))) push(readme, 'the toast levels', P.register, `const ${consts.find((n) => /^DEFAULT_LEVELS$/.test(n))} `)
     if (consts.some((n) => /^(GREEN|YELLOW|RED|WARN|NBSP|SEPARATOR)$/.test(n))) push(readme, 'the toast text or icons', P.register, `const ${consts.find((n) => /^(GREEN|YELLOW|RED|WARN|NBSP|SEPARATOR)$/.test(n))} `)
   }
   if (rb.helpers !== ra.helpers && rb.present && ra.present) push(readme, 'the toast text helpers', P.register, 'function segment')
@@ -110,7 +110,7 @@ export function gateReasons({ before, after, changes, rules }) {
   if (!same(rb.bodyKeys, ra.bodyKeys)) { push(claude, 'the usage.json keys', P.register, 'const body'); push(design, 'the usage.json format', P.register, 'const body'); push(readme, 'the usage.json format', P.register, 'const body') }
   if (rb.writePath !== ra.writePath) push(design, 'where usage.json is written', P.register, 'const path')
   if (rb.surfaceRule !== ra.surfaceRule) push(design, 'when usage.json is written (the surface rule)', P.register, 'surfaces.includes')
-  if (rb.thresholds !== ra.thresholds) push(design, 'the number of toast levels', P.register, 'const THRESHOLDS')
+  if (rb.thresholds !== ra.thresholds) push(design, 'the number of toast levels', P.register, 'const DEFAULT_LEVELS')
   if (rb.toastCalls !== ra.toastCalls) push(design, 'the number of kinds of toast', P.register, '$.ui.toast(')
 
   const uc = userConfigChanges(pb, pa)

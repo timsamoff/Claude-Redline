@@ -10,6 +10,11 @@ function num(src, name) {
   return m ? Number(m[1]) : null
 }
 
+function levelList(src) {
+  const m = src.match(/^const DEFAULT_LEVELS = \[([\d,\s]+)\][ \t]*$/m)
+  return m ? m[1].split(',').map((x) => Number(x.trim())).filter((x) => x > 0) : null
+}
+
 function readJson(tree, path, rule) {
   const t = tree.text(path)
   if (t == null) return { error: unable(rule, path, `${path} is missing`) }
@@ -33,6 +38,11 @@ export function checkDefaults(tree, rules) {
     if (want[n] == null) return [unable('K1', P.register, `the constant ${n} was not found in register.js`)]
   }
   const uc = pj.value.userConfig || {}
+  const out = []
+  const lv = levelList(reg)
+  if (lv == null) return [unable('K1', P.register, 'the constant DEFAULT_LEVELS was not found in register.js')]
+  const lvGot = uc.levels ? uc.levels.default : undefined
+  if (lvGot !== lv.join(', ')) out.push(viol('K1', P.plugin, undefined, 'levels.default', `plugin.json levels.default is ${lvGot === undefined ? 'missing' : '"' + lvGot + '"'}, but DEFAULT_LEVELS in register.js is "${lv.join(', ')}".`, 'Make them equal. A JSON file cannot import the constant, so change both.'))
   const pairs = [
     ['toastSeconds', 'default', 'DEFAULT_TOAST_SECONDS'],
     ['alertToastSeconds', 'default', 'DEFAULT_ALERT_SECONDS'],
@@ -41,7 +51,6 @@ export function checkDefaults(tree, rules) {
     ['toastSeconds', 'max', 'MAX_SECONDS'],
     ['alertToastSeconds', 'max', 'MAX_SECONDS'],
   ]
-  const out = []
   for (const [k, field, c] of pairs) {
     const got = uc[k] ? uc[k][field] : undefined
     if (got !== want[c]) out.push(viol('K1', P.plugin, undefined, `${k}.${field}`, `plugin.json ${k}.${field} is ${got === undefined ? 'missing' : got}, but ${c} in register.js is ${want[c]}.`, `Make them equal. A JSON file cannot import the constant, so change both.`))
@@ -55,11 +64,12 @@ export function checkBareNumbers(tree, rules) {
   const reg = tree.text(P.register)
   if (reg == null) return [unable('K2', P.register, `${P.register} is missing`)]
   const banned = new Map()
-  for (const n of ['NOTICE_AT', 'RESET_TIME_AT', 'ALERT_AT', 'MAX_SECONDS']) {
-    const x = num(reg, n)
-    if (x == null) return [unable('K2', P.register, `the constant ${n} was not found in register.js`)]
-    banned.set(x, n)
-  }
+  const lv = levelList(reg)
+  if (lv == null) return [unable('K2', P.register, 'the constant DEFAULT_LEVELS was not found in register.js')]
+  for (const x of lv) banned.set(x, 'DEFAULT_LEVELS')
+  const mx = num(reg, 'MAX_SECONDS')
+  if (mx == null) return [unable('K2', P.register, 'the constant MAX_SECONDS was not found in register.js')]
+  banned.set(mx, 'MAX_SECONDS')
   for (const n of ['DEFAULT_TOAST_SECONDS', 'DEFAULT_ALERT_SECONDS']) {
     const x = num(reg, n)
     if (x == null) return [unable('K2', P.register, `the constant ${n} was not found in register.js`)]
@@ -207,10 +217,10 @@ export function checkReadme(tree, rules) {
   for (const o of Object.values(pj.value.userConfig || {})) if (o.title) need(o.title, 'a setting title from plugin.json')
   const reg = tree.text(P.register)
   if (reg == null) return [...out, unable('R1', P.register, `${P.register} is missing`)]
-  for (const n of ['NOTICE_AT', 'RESET_TIME_AT', 'ALERT_AT']) {
-    const x = num(reg, n)
-    if (x == null) { out.push(unable('R1', P.register, `the constant ${n} was not found in register.js`)); continue }
-    if (!new RegExp(`(?<!\\d)${x}\\s?(%|percent)`).test(readme)) out.push(viol('R1', P.readme, undefined, `level:${x}`, `The README does not mention the ${x} percent level (${n}).`, `Document the ${x} percent level, written as "${x}%" or "${x} percent".`))
+  const lv = levelList(reg)
+  if (lv == null) out.push(unable('R1', P.register, 'the constant DEFAULT_LEVELS was not found in register.js'))
+  for (const x of lv || []) {
+    if (!new RegExp(`(?<!\d)${x}\s?(%|percent)`).test(readme)) out.push(viol('R1', P.readme, undefined, `level:${x}`, `The README does not mention the ${x} percent level (DEFAULT_LEVELS).`, `Document the ${x} percent level, written as "${x}%" or "${x} percent".`))
   }
   for (const k of registerSignals(reg).bodyKeys) need(k, 'a usage.json key from register.js')
   return out

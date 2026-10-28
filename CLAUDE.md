@@ -35,12 +35,16 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 - `$.session.usage()` gives `percentUsed` (0 to 100) and `resetsAt` as an ISO 8601 string. Convert with `String(Math.floor(Date.parse(resetsAt) / 1000))`.
 - Map by `kind`: `five_hour` and `seven_day` only. Ignore `spend_limit` and model-scoped kinds.
 
+## Tests
+`node --test tests/redline.test.mjs` runs `register.js` against a fake `$` (usage.json contract, levels, reset detection, `/redline`). Run it after any change to `register.js`.
+
 ## Rules for the code
 - Do not change `~/.claude/hooks/usage-check.sh` or `~/.claude/statusline.sh`. Claude-Redline matches their format.
 - `usage-check.sh` treats a file older than 900 seconds as stale, so write on `turn.complete` as well as `session.measure`.
 - `$.fs.write` is not atomic. Write only when `$.session.surfaces()` includes `vscode`, so Claude-Redline never races the terminal status line.
-- Toast levels are the named constants `NOTICE_AT` (70), `RESET_TIME_AT` (90) and `ALERT_AT` (95), announced once per window per reset cycle. Do not write a threshold or duration as a bare number elsewhere.
-- The `userConfig` defaults and limits in `plugin.json` must equal the duration constants in `register.js`. JSON cannot import them, so check both when changing either.
+- Toast levels default to the constant `DEFAULT_LEVELS` (70, 90, 95) and can be replaced by the `levels` option. Each is announced once per window per reset cycle, and the highest is the alert level. Do not write a level or duration as a bare number elsewhere.
+- The `/redline` command registers on `session.start` and is served by `command.run`. It only reads and returns text.
+- The `userConfig` defaults and limits in `plugin.json` must equal the constants in `register.js` (`DEFAULT_LEVELS` as the string "70, 90, 95", and the duration constants). JSON cannot import them, so check both when changing either.
 - Build toast text only through `segment()` and `failureText()`, so the preview samples cannot drift from the real format. Icon, label and percent are joined with non-breaking spaces.
 - Functions that take `$` stay in `register.js`. The validator rejects passing `$` to a function imported from another file. Event names passed to `on` must be string literals.
 - Run `claude plugin validate ./claude-redline` after any change to the plugin folder.

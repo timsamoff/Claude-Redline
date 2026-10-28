@@ -148,9 +148,9 @@ git(['add', REG])
 blocked('K2: bare 120 outside the constants', commit(), '[K2]', 'MAX_SECONDS')
 reset()
 
-sub(REG, "segment(96, '5h', soon)", "segment(95, '5h', soon)")
+sub(REG, "segment(high, '5h', soon)", "segment(95, '5h', soon)")
 git(['add', REG])
-blocked('K2 adversarial: bare 95 inside the preview function is still caught', commit(), '[K2]', 'ALERT_AT')
+blocked('K2 adversarial: bare 95 inside the preview function is still caught', commit(), '[K2]', 'DEFAULT_LEVELS')
 reset()
 
 sub(REG, '$.ui.toast(failureText(err), { timeoutMs: alertMs })', "$.ui.toast('Write failed', { timeoutMs: alertMs })")

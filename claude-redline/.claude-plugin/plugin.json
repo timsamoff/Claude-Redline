@@ -19,10 +19,16 @@
     "alertToastSeconds": {
       "type": "number",
       "title": "Alert toast duration (seconds)",
-      "description": "How long the 95 percent and write-failure toasts stay on screen. Default 10.",
+      "description": "How long the highest-level and write-failure toasts stay on screen. Default 10.",
       "default": 10,
       "min": 1,
       "max": 120
+    },
+    "levels": {
+      "type": "string",
+      "title": "Toast levels (percent)",
+      "description": "Usage percentages that trigger a toast, separated by commas. Up to 5, from 1 to 100. The highest is the alert level. Default 70, 90, 95.",
+      "default": "70, 90, 95"
     },
     "previewToasts": {
       "type": "string",

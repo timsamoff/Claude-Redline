@@ -19,13 +19,15 @@ Claude Code also generates `claude-redline/.claude-plugin/types/` and `claude-re
 
 ## Runtime model
 
-The hooks module registers two hooks:
+The hooks module registers four handlers:
+- `session.start`: registers the `/redline` command with `$.command.register`.
+- `command.run` for `redline`: returns the current 5-hour and 7-day usage and reset times as the command's text. It reads the figures with `$.session.usage()` and writes nothing.
 - `session.measure`: fires after each turn and when a usage figure changes (context, cost or a rate-limit window).
 - `turn.complete`: fires when a turn ends. This hook reads the figures itself with `$.session.usage()`.
 
-Both hooks run the same handler. The handler does nothing unless `$.session.surfaces()` includes `vscode`. That keeps the plugin from writing alongside a terminal status line from the same session. Otherwise it does two independent things: write the file, then decide whether to toast. A failure in one does not stop the other.
+The last two hooks run the same handler. The handler does nothing unless `$.session.surfaces()` includes `vscode`. That keeps the plugin from writing alongside a terminal status line from the same session. Otherwise it does two independent things: write the file, then decide whether to toast. A failure in one does not stop the other.
 
-The mod calls only these parts of the mods API: `$.session.surfaces`, `$.session.usage`, `$.env.get` (for `HOME` and `USERPROFILE`), `$.fs.write`, `$.ui.toast` and `$.ui.log` (to the debug log). It makes no network calls and starts no processes. `claude plugin validate` lists these calls.
+The mod calls only these parts of the mods API: `$.command.register`, `$.session.surfaces`, `$.session.usage`, `$.env.get` (for `HOME` and `USERPROFILE`), `$.fs.write`, `$.ui.toast` and `$.ui.log` (to the debug log). It makes no network calls and starts no processes. `claude plugin validate` lists these calls.
 
 ## Data
 
@@ -49,12 +51,12 @@ The file is written to `<home>/.claude/usage.json`, where `<home>` is `HOME`, or
 ## Toasts
 
 Each reading produces at most one toast, covering both windows, in the form `icon 5h 72% | icon 7d 32%`. A toast appears only when something new happened:
-- **Threshold crossing.** The levels are 70 (notice), 90 and 95 (alert). Each is announced once per window per reset cycle. If a reading crosses several at once, only the highest is announced.
-- **Reset time.** Crossing 90 or 95 adds `resets <local time>` to that window's text.
+- **Threshold crossing.** The default levels are 70, 90 and 95, and the `levels` option replaces them. Each is announced once per window per reset cycle. If a reading crosses several at once, only the highest is announced. The highest level is the alert level.
+- **Reset time.** Every announced level adds `resets <local time>` to that window's text, with the weekday when the reset is more than a day away.
 - **Window reset.** When a window reports a later reset time than before, its text gets `(window reset)` and its levels are armed again.
 - **Write failure.** One toast per failure streak, `usage.json write failed: <error>`.
 
-The icon follows the percentage: a red circle at 95 or more, a yellow circle at 70 or more, otherwise a green circle. The failure toast uses a warning sign. Each window's icon, label and percentage are joined with non-breaking spaces so a wrapped toast does not split them.
+The icon follows the percentage: a red circle at the highest level or more, a yellow circle at the lowest level or more, otherwise a green circle. The failure toast uses a warning sign. Each window's icon, label and percentage are joined with non-breaking spaces so a wrapped toast does not split them.
 
 Notice-level toasts last 6 seconds by default and alert-level toasts (95 percent and write failures) last 10. The host adds a "redline plugin" label before the text. The mod cannot change that label.
 
@@ -68,6 +70,7 @@ Options are declared in `plugin.json` under `userConfig` and reach the mod as th
 |---|---|---|---|
 | `toastSeconds` | 6 | 1 to 120 | Duration of notice-level toasts |
 | `alertToastSeconds` | 10 | 1 to 120 | Duration of alert-level and failure toasts |
+| `levels` | 70, 90, 95 | 1 to 100, up to 5 values | Percentages that trigger a toast. Invalid input falls back to the default |
 | `previewToasts` | Off | Off or On | When On, shows one sample of each toast style, labeled DEMO, on the first turn after a restart |
 
 The defaults and range exist in both `plugin.json` and `register.js` and must match. A change to an option takes effect after Claude Code restarts. The `options` field on `previewToasts` makes the plugin require Claude Code v2.1.271 or later, according to the plugin docs.
