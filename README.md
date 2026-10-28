@@ -1,6 +1,6 @@
 # Claude-Redline
 
-![Claude-Redline icon](prod/claude-redline-icon-512.png)
+<img src="assets/claude-redline-icon-512.png" alt="Claude-Redline icon" width="128px">
 
 **Claude Code usage alerts without another dashboard.**
 

@@ -14,6 +14,7 @@ A terminal status line script can write `~/.claude/usage.json`, but the Claude C
 | `claude-redline/hooks/hooks.json` | Points Claude Code at the hooks module |
 | `claude-redline/hooks/register.js` | The hooks module, about 210 lines |
 | `prod/` | Icon artwork: an Illustrator source and an SVG export |
+| `assets/` | The 512 px PNG icon the README shows |
 
 Claude Code also generates `claude-redline/.claude-plugin/types/` and `claude-redline/tsconfig.json` for editor type hints. Both are git-ignored and not needed at runtime.
 
