@@ -17,7 +17,7 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 - `claude-redline/` is the plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.js` (ES module, no DOM, no Node, every effect goes through `$`).
 - `prod/` holds the icon art (Illustrator source and SVG export). Both are tracked.
 - `README.md`, `LICENSE` (MIT), `CLAUDE.md`, `DESIGN.md`, `HANDOFF.md` and `.claude-plugin/marketplace.json` (marketplace `timsamoff-tools`, entry `redline`, source `./claude-redline`) are tracked at the repo root. Keep `CLAUDE.md` out of `claude-redline/`, because `claude plugin validate` warns about a `CLAUDE.md` at the plugin root.
-- Local only (git-ignored): `Sentinel-Notes/` (audit report, `TODO.md`, design briefs, `archive/`), `Sentinel-Prompts/`, `PROJECT_PROFILE.md`, `scratch/`, and the files Claude Code generates in `claude-redline/` (`tsconfig.json`, `.claude-plugin/types/`).
+- Local only (git-ignored): `Sentinel-Notes/` (audit report, `TODO.md`, design briefs, `archive/`), `Sentinel-Prompts/`, `PROJECT_PROFILE.md`, `INTEGRATION_CHECKLIST.md`, `scratch/`, and the files Claude Code generates in `claude-redline/` (`tsconfig.json`, `.claude-plugin/types/`).
 - `CLAUDE.md` is shared on purpose. `Sentinel-Notes/` is local-only by Tim's choice, and `HANDOFF.md` is tracked because he sometimes runs sessions on other machines.
 
 ## Where information goes
@@ -57,6 +57,10 @@ Terse. A comment is one or two sentences, a pointer to what the code does or why
 
 Commit messages are written in Tim's voice and describe the change, never the agent or the session. No trailers of any kind. Never commit or push without Tim's explicit yes, with one exception: at close-out the agent may commit and push `HANDOFF.md` alone, with a one-line message, and tell Tim afterward.
 
+Body rule: a body of short bullets is allowed only when the commit is one coherent change whose parts a single subject can't carry honestly (three or more separate parts, or a behavior change someone reading history later would need to know about). Anything smaller gets no body. A commit that bundles unrelated changes is split, not bulleted. Allowed trailers: none.
+
+There is no per-commit override. If the checks block a commit, split it or correct it. The agent never adds an override line to get a commit through.
+
 ## Handoff
 (The format below is copied word for word from Tim's own configuration.)
 
@@ -83,6 +87,13 @@ Tim sometimes runs sessions away from this computer. A remote session sees only 
 - After finishing an item, name the strongest next item with a reason and start on it. Items carry no priority, effort or dependency data, so this is a judgment from the wording. Say so plainly, and let Tim redirect.
 - Updating `TODO.md` is part of finishing the work an item describes, not a step to remember afterward.
 - When any distinct task reaches a stopping point, mention the open backlog if nothing in it has been touched since before the task began. A short mention is enough, and skip it if it was already raised this session.
+
+## Keep docs in step (same commit)
+- `CLAUDE.md`: when a named constant, a hooked event, the set of `$` calls, the `usage.json` keys, a `userConfig` key, the plugin name or layout, or a convention changes.
+- `README.md`: when toast text or levels, settings, install steps, the `$` call set, the minimum version or the license change. Re-quote the validator's output in the README if its `calls:` line changes.
+- `DESIGN.md`: when a hooked event is added or removed, the plugin starts using a new kind of capability, how or when `usage.json` is written changes, a new place to show output is added, or a new toast type or level is added.
+- `Sentinel-Notes/TODO.md`: move finished items to Done.
+The full checklist is in `INTEGRATION_CHECKLIST.md` (local). Automatic checks for these are not built yet.
 
 ## Close-out
 Run this when writing the handoff and whenever a distinct task finishes:

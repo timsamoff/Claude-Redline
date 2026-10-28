@@ -1,13 +1,13 @@
 # Handoff: Claude-Redline
 
-Updated 2026-10-28, at the end of the Sentinel design and code quality audit. Last pushed commit: 5336ebe. Everything below is committed and pushed.
+Updated 2026-10-28, after the Sentinel integration audit. Last pushed commit: f7b4bb0. The edits to `CLAUDE.md`, `.gitignore` and this file made during the integration audit are not committed yet.
 
 ## 1. Current task and status
 The audit is finished and its code fixes are applied. `register.js` now has one set of duration constants, named threshold constants (`NOTICE_AT`, `RESET_TIME_AT`, `ALERT_AT`), a shared `readWindow` helper, and `segment()` and `failureText()` helpers that join icon, label and percent with non-breaking spaces. A 63-run fake-data harness showed identical toast text, timeouts and written files before and after, apart from the intended non-breaking spaces. `claude plugin validate` passes.
 
 Not verified in a live VS Code session: the wrap fix, a real threshold or reset toast, and the Off/On picker for `previewToasts`.
 
-Sentinel progress: prompt 00 (discovery) and prompt 01 (design and code quality audit) are done. Prompt 02 (integration audit) is next, then 03 (gate check). Audit results and the backlog are in the local `Sentinel-Notes/`. `CLAUDE.md` holds the decisions made along the way.
+Sentinel progress: prompts 00 (discovery), 01 (design and code quality audit) and 02 (integration audit) are done. Prompt 03 (gate check implementation) is next. Nothing is enforced yet: no hooks exist, and the checks are only described in the local `INTEGRATION_CHECKLIST.md`. Audit results and the backlog are in the local `Sentinel-Notes/`. `CLAUDE.md` holds the decisions made along the way.
 
 ## 2. Files touched
 - `claude-redline/hooks/register.js`: refactor and a two-line header comment. Behavior unchanged except the non-breaking spaces.
@@ -15,6 +15,7 @@ Sentinel progress: prompt 00 (discovery) and prompt 01 (design and code quality 
 - `README.md`, `LICENSE` (MIT) and `.claude-plugin/marketplace.json`: new, at the repo root. The README quotes the validator's `calls:` output.
 - `CLAUDE.md`: rewritten and now tracked (stale status fixed, conventions added).
 - `HANDOFF.md`: this file, now tracked.
+- Integration audit changes: `CLAUDE.md` gained the commit-body rule, the no-override rule and a "Keep docs in step" section. `.gitignore` now also ignores `INTEGRATION_CHECKLIST.md`. Local only: `INTEGRATION_CHECKLIST.md` (new) and `Sentinel-Notes/TODO.md` (gate-check and line-ending items).
 - `.gitignore`: now ignores `Sentinel-Notes/`, `Sentinel-Prompts/`, `PROJECT_PROFILE.md`, `scratch/` and the generated `claude-redline/tsconfig.json`. `CLAUDE.md` and `HANDOFF.md` are no longer ignored.
 - Local only: `Sentinel-Notes/` (report, `TODO.md`, two briefs), `scratch/regress-harness.mjs`, `PROJECT_PROFILE.md`.
 - `claude-redline/.claude-plugin/plugin.json`: added `displayName` ("Claude Redline"). The ID stays `redline`.
@@ -26,7 +27,8 @@ Sentinel progress: prompt 00 (discovery) and prompt 01 (design and code quality 
 3. Publish: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` now exist and validate. Still to do: manifest `author`, `homepage` and `repository`, and a test of the marketplace install from a fresh clone. The PNG exists in `prod/`, but the directory validator only looks inside the plugin folder, so a copy at `claude-redline/.claude-plugin/icon.png` (or an `icon` field in `plugin.json`) is still needed. See `Sentinel-Notes/submission-readiness-design-brief.md`.
 4. Optional: rename the project folder to `Claude-Redline` with `scratch/rename-project.ps1` (local, git-ignored). It runs as a dry run by default. Use `-Apply` from a PowerShell window outside the folder, after closing VS Code and any Claude session for it. It renames the folder, copies Claude's history folder to the new name, and updates the plugin path in `~/.claude/settings.json`. Only the dry run has been tested.
 5. After a restart, check whether `displayName` ("Claude Redline", added to `plugin.json`) changes the "redline plugin" label on toasts. Unverified.
-6. Next audit prompt: `Sentinel-Prompts/02-integration-audit.md`.
+6. Next audit prompt: `Sentinel-Prompts/03-gate-check-implementation.md`. It builds the checks in `INTEGRATION_CHECKLIST.md`. Decisions it must confirm with Tim: where the hook source lives, the commit-message caps (proposed 72 and 4), and how often to run the validator.
+7. Commit the integration-audit edits to `CLAUDE.md`, `.gitignore` and `HANDOFF.md` (Tim's yes first).
 
 ## 4. Open questions for Tim
 - Whether `.gitignore` should skip Illustrator temp files (one appeared in `prod/` earlier).
