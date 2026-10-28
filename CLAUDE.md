@@ -16,6 +16,7 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 ## Layout
 - `claude-redline/` is the plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.js` (ES module, no DOM, no Node, every effect goes through `$`).
 - `prod/` holds the icon art (Illustrator source and SVG export). Both are tracked.
+- `.githooks/` (git hook shims), `scripts/sentinel/` (the gate checks, their rules, tests and the session-start script), `.claude/settings.json` (a SessionStart hook that prints `HANDOFF.md`) and `.gitattributes` (keeps the hook scripts on LF) are tracked. None of them ships with the plugin, because the plugin is only `claude-redline/`.
 - `README.md`, `LICENSE` (MIT), `CLAUDE.md`, `DESIGN.md`, `HANDOFF.md` and `.claude-plugin/marketplace.json` (marketplace `timsamoff-tools`, entry `redline`, source `./claude-redline`) are tracked at the repo root. Keep `CLAUDE.md` out of `claude-redline/`, because `claude plugin validate` warns about a `CLAUDE.md` at the plugin root.
 - Local only (git-ignored): `Sentinel-Notes/` (audit report, `TODO.md`, design briefs, `archive/`), `Sentinel-Prompts/`, `PROJECT_PROFILE.md`, `INTEGRATION_CHECKLIST.md`, `scratch/`, and the files Claude Code generates in `claude-redline/` (`tsconfig.json`, `.claude-plugin/types/`).
 - `CLAUDE.md` is shared on purpose. `Sentinel-Notes/` is local-only by Tim's choice, and `HANDOFF.md` is tracked because he sometimes runs sessions on other machines.
@@ -61,6 +62,8 @@ Body rule: a body of short bullets is allowed only when the commit is one cohere
 
 There is no per-commit override. If the checks block a commit, split it or correct it. The agent never adds an override line to get a commit through.
 
+Commit and push autonomy (decided 2026-10-28, after the checks were verified): confirm every time. Ask Tim before every commit and every push. The checks still run on each one.
+
 ## Handoff
 (The format below is copied word for word from Tim's own configuration.)
 
@@ -93,12 +96,23 @@ Tim sometimes runs sessions away from this computer. A remote session sees only 
 - `README.md`: when toast text or levels, settings, install steps, the `$` call set, the minimum version or the license change. Re-quote the validator's output in the README if its `calls:` line changes.
 - `DESIGN.md`: when a hooked event is added or removed, the plugin starts using a new kind of capability, how or when `usage.json` is written changes, a new place to show output is added, or a new toast type or level is added.
 - `Sentinel-Notes/TODO.md`: move finished items to Done.
-The full checklist is in `INTEGRATION_CHECKLIST.md` (local). Automatic checks for these are not built yet.
+The full checklist is in `INTEGRATION_CHECKLIST.md` (local). The commit and push checks enforce the first three of these; see "Gate checks".
+
+## Gate checks
+Automatic checks run from git hooks, written in plain Node (no dependencies) in `scripts/sentinel/`.
+- **Install, once per clone:** `node scripts/sentinel/check.mjs --install`. This sets `core.hooksPath` to `.githooks`. A fresh clone has no enforcement until it is run, and the checks need Node on the machine that commits.
+- **On commit:** `commit-msg` checks the message (M1 to M5: subject up to 72 characters, optional bullets under the recorded trigger, at most 4 bullets of 80 characters, no wrapped bullets, no trailers, no attribution lines, no agent-voice phrases). `pre-commit` checks the staged content: documentation gates G1 (`CLAUDE.md`), G2 (`README.md`) and G3 (`DESIGN.md`), then K1 to K8 and R1 (defaults match, no bare thresholds, toast text from the helpers, validator passes, README quote matches, plugin ID matches, no ignored or temporary files, icon rules, README phrases). The first commit that adds a new kind of file is blocked once (N1) so three questions get answered.
+- **On push:** `pre-push` runs the full scan of the committed tree, which also confirms the hooks are wired and executable (I1). There is no CI, so this is the full-scan trigger.
+- **Manual modes:** `node scripts/sentinel/check.mjs` checks the staged or working-tree diff. Add `--full` for the whole tree, `--notes` for `TODO.md` and the briefs, `--last-message` to check the last commit after the fact, or `--write-baseline` to record known problems.
+- **TODO and briefs cannot be checked by a hook,** because `Sentinel-Notes/` is git-ignored. `--notes` reads the files on disk. Run it at close-out and when finishing a TODO item.
+- **Fixing a block:** correct the change or split the commit. Never use `--no-verify`. There is no override.
+- **Exceptions and baseline:** `scripts/sentinel/sentinel-exceptions.json` is empty. An entry needs the rule, one exact file, a content match, a reason, an owner and a review-by date, and an expired entry stops applying. `baseline.json` is empty because the first full scan found nothing.
+- **After changing a hook or a check,** run `node scripts/sentinel/tests/integration.mjs` (about two minutes, real commits in a throwaway clone).
 
 ## Close-out
 Run this when writing the handoff and whenever a distinct task finishes:
 1. Rewrite or clear `HANDOFF.md`.
-2. Update `Sentinel-Notes/TODO.md` (move finished items to Done, archive finished briefs).
+2. Update `Sentinel-Notes/TODO.md` (move finished items to Done, archive finished briefs), then run `node scripts/sentinel/check.mjs --notes` and fix what it reports.
 3. Commit and push `HANDOFF.md` alone if it changed. Any other commit or push waits for Tim's yes.
 4. End with one line saying what was done and what was skipped and why.
 
