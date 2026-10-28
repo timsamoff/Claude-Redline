@@ -1,48 +1,40 @@
 # Handoff: Claude-Redline
 
-Updated 2026-10-28, when Tim logged off partway through Sentinel prompt 03. Last pushed commit: 86be4bf, plus the handoff commit that follows this edit. Uncommitted: Tim's own rewrite of `README.md`, and the new `scripts/sentinel/` files.
+Updated 2026-10-28, after finishing Sentinel prompt 03. Last pushed commit: 68325d9, plus the handoff commit that follows this edit. Uncommitted: Tim's own rewrite of `README.md`.
 
 ## 1. Current task and status
-Building Sentinel prompt 03 (gate-check implementation). Every question is answered, and the build is about a third done. Nothing is wired up: `core.hooksPath` is unset and no hook files exist, so nothing can block a commit yet.
+All four Sentinel prompts are finished. The gate checks are live and pushed:
+- Git hooks (`commit-msg`, `pre-commit`, `pre-push`) in `.githooks/`, checks in `scripts/sentinel/`, and `core.hooksPath` set in this clone.
+- Verified by 87 real-commit scenarios in a throwaway clone and by fresh `claude -p` sessions for the session-start hook. The first full scan of the real tree found nothing, so `baseline.json` is empty.
+- A tracked `.claude/settings.json` SessionStart hook prints this file at the start of a session.
+- Commit and push autonomy: confirm every time. The one exception is this file, which may be committed and pushed alone at close-out.
 
-Decisions approved by Tim:
-- Native git hooks, with source tracked in `.githooks/` and `scripts/sentinel/` (Node, no dependencies).
-- The first commit that adds a new kind of file is blocked once, the type is recorded, and the retry passes.
-- The checks carry their own rules and do not read the local `INTEGRATION_CHECKLIST.md`.
-- The validator runs only when the plugin folder, marketplace file or README is in the commit.
-- Commit messages: subject up to 72 characters, up to 4 bullets, each bullet one line up to 80 characters, no wrapped bullets, no trailers, no override.
-- Agent-voice phrase list approved as proposed. "Claude" and "Claude Code" are left off it.
-- Tracked `.claude/settings.json` with a `SessionStart` hook that prints this file. Tim chose tracked, and the docs say repo hooks apply in single-repo cloud sessions.
-
-Written, untracked, syntax-checked only: `scripts/sentinel/` has `rules.json`, `sentinel-exceptions.json` (empty), `baseline.json` (empty), and in `lib/`: `git.mjs`, `report.mjs`, `commit-message.mjs`, `signals.mjs` (documentation gates), `consistency.mjs` (K1, K2, K3, K6, K8 and README phrases) and `validator.mjs` (K4, K5, via `claude plugin validate --json`).
-
-Not written yet: `lib/extensions.mjs`, `lib/notes.mjs`, `check.mjs` (hook modes, `--full`, `--notes`, `--install`, `--last-message`), `session-start.mjs`, the three `.githooks/` shims, `.claude/settings.json`, and `tests/`.
-
-The plugin itself is unchanged. Still unverified in live VS Code: the wrap fix, a real threshold or reset toast, and the Off/On picker.
+Still unverified in live VS Code: the toast wrap fix, a real threshold or reset toast, the Off/On picker, and a marketplace install from a fresh clone.
 
 ## 2. Files touched
-- `scripts/sentinel/`: new and untracked, as listed above.
-- `README.md`: changed on disk by Tim, not by this session, and not touched here. It is uncommitted.
-- Everything else is unchanged since the last handoff. See `git log`.
+- Committed in `85cbe05`: `.githooks/`, `scripts/sentinel/` (checks, rules, empty exceptions and baseline, the integration suite), `.claude/settings.json`, `.gitattributes`.
+- Committed in `68325d9`: `CLAUDE.md` (a "Gate checks" section, the autonomy choice, a `--notes` close-out step).
+- Local only: `Sentinel-Notes/TODO.md` (25 open, 14 done), `INTEGRATION_CHECKLIST.md` (implementation status added), `PROJECT_PROFILE.md`.
+- `README.md`: Tim's own uncommitted rewrite. Still not touched by this session.
 
 ## 3. Next steps
-1. Write the missing pieces. The shims must try `node` on PATH, then `C:\Program Files\nodejs\node`, then fail loudly.
-2. Run `node scripts/sentinel/check.mjs --install` (sets `core.hooksPath` and the executable bit), and seed `.git/sentinel/known-extensions.txt` from history and the working tree, including `.mjs`.
-3. Test. Unit tests for the message and signal logic. Integration tests as real `git commit` attempts in a scratch clone under `scratch/`: a blatantly bad message, staged-versus-unstaged content, each rule, deletions, a large diff, a forced tool failure, and exceptions (expired and content-keyed). Test pre-push against a local bare remote, and the session-start hook with `claude -p`.
-4. Run the report-only baseline pass (Part 4), record it in `baseline.json`, and log anything found in `Sentinel-Notes/TODO.md`.
-5. Update `CLAUDE.md` (the modes, the close-out step `check.mjs --notes`, the commit-autonomy choice) and the local checklist and TODO statuses.
-6. Ask Tim the commit-autonomy question (three options) and how to group the commits. Do not commit mid-run.
-7. Tim will rename the folder last, with `scratch/rename-project.ps1` (dry run by default; `-Apply` from outside the folder after closing VS Code).
+1. Get Tim's decision on the README (first open question below).
+2. Recommended next TODO item: P1, adding `author`, `homepage` and `repository` to `plugin.json`. It clears the validator's author warning and is needed for the directory. It was not started because prompt 03 says to wait for Tim's review of this run's backlog (T1, E3, G6, G8).
+3. Other open work: tests for `register.js` (F4), a copy of the icon inside the plugin folder, and a marketplace install test from a fresh clone.
+4. Tim will rename the folder last with `scratch/rename-project.ps1` (a dry run by default; `-Apply` from outside the folder, after closing VS Code). `core.hooksPath` is relative, so the hooks survive the rename.
+5. In any new clone, run `node scripts/sentinel/check.mjs --install`. Until then the clone has no enforcement. The hooks need Node on the committing machine.
 
 ## 4. Open questions for Tim
-- His README edit starts with a ```markdown fence and ends with a closing fence, so GitHub would show the whole file as one code block. The icon `<img>` line is gone. The link to `register.js` says `claude-redline/register.js`, but the file is `claude-redline/hooks/register.js`. It also says "my terminal status line script". Does he want these fixed?
-- Add a README integrity check (relative links resolve, fences balanced, icon line present)? It is not in the approved list and is logged as TODO G6.
+- His README edit starts and ends with a ```markdown fence (GitHub would show one code block), has lost the icon `<img>` line, links to `claude-redline/register.js` instead of `claude-redline/hooks/register.js`, and says "my terminal status line script". Fix these? None of the approved checks catch them.
+- Add a README integrity check (relative links resolve, fences balanced, icon line present)? Logged as TODO G6, not built.
+- Claude Code reports that two `Write(...)` allow rules in `~/.claude/settings.json` never match, because only `Edit(...)` rules apply to file writes. This may explain some auto-mode blocks (TODO E3). Fix them?
 - Whether to omit `version`, whether the preview option ships publicly, and the repo's visibility (not checked).
 
 ## 5. Tried and failed, and facts learned
-- A git hook finds `node` and `claude` with a normal PATH but neither with a stripped PATH, so the shim needs fallbacks and the checks must fail loudly.
-- `claude plugin validate --json` returns `success`, errors and the exact `notes` lines, and exits 1 for a missing folder. Both validations take about 1.7 seconds. Use it instead of scraping text.
-- A marketplace entry whose name differs from the manifest name still passes the validator, which is why check K6 exists.
-- In auto mode the Edit and Write tools intermittently fail with "classifier gave no verdict". Ask Tim before using a PowerShell workaround.
+- Hook shell scripts must keep LF line endings (`.gitattributes` enforces it). The executable bit must be committed with `git add --chmod=+x`; a `git reset` loses an index-only change.
+- A git hook finds `node` and `claude` with a normal PATH but not with a stripped one, so the shims search the standard Node path and the validator runner searches the usual `claude` locations. Both fail loudly if nothing is found.
+- `claude plugin validate --json` is the reliable way to read the validator. A marketplace entry whose name differs from the manifest name still passes the validator, which is why check K6 exists.
+- A broken `rules.json` once crashed with a raw stack trace. It now reports plainly and blocks.
+- Never use `--no-verify`. A commit that bypasses the hooks is caught later by the `pre-push` full scan.
+- The Edit and Write tools failed intermittently in earlier sessions ("classifier gave no verdict") and worked in this one. Ask Tim before using a PowerShell workaround.
 - The plugin ID cannot start with `claude-`, and a `CLAUDE.md` inside the plugin folder makes the validator warn.
-- A new conversation in an open window reuses the running process, so settings changes need a window reload or a restart.
