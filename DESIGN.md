@@ -28,7 +28,7 @@ The hooks module registers four handlers:
 
 The last two hooks run the same handler. The handler does nothing unless `$.session.surfaces()` includes `vscode`. That keeps the plugin from writing alongside a terminal status line from the same session. Otherwise it does two independent things: write the file, then decide whether to toast. A failure in one does not stop the other.
 
-The mod calls only these parts of the mods API: `$.command.register`, `$.session.surfaces`, `$.session.usage`, `$.env.get` (for `HOME` and `USERPROFILE`), `$.fs.write`, `$.ui.toast` and `$.ui.log` (to the debug log). It makes no network calls and starts no processes. `claude plugin validate` lists these calls.
+The mod calls only these parts of the mods API: `$.command.register`, `$.session.surfaces`, `$.session.usage`, `$.env.get` (for `HOME` and `USERPROFILE`), `$.fs.write`, `$.store.get` and `$.store.set` (the plugin's own key-value store, for the announcement state), `$.ui.toast` and `$.ui.log` (to the debug log). It makes no network calls and starts no processes. `claude plugin validate` lists these calls.
 
 ## Data
 
@@ -47,21 +47,21 @@ Each rate-limit entry has a `kind`, a `percentUsed` (0 to 100, at most one decim
 
 A missing window gives `null` and an empty string. If both windows are missing, no file is written. The format matches the maintainer's own terminal status line script, which is outside this repository.
 
-The file is written to `<home>/.claude/usage.json`, where `<home>` is `HOME`, or `USERPROFILE` if `HOME` is unset. The write replaces the file in place and is not atomic. The mods API documents this behavior.
+The file is written to `<home>/.claude/usage.json`, where `<home>` is `USERPROFILE`, or `HOME` if `USERPROFILE` is unset. `USERPROFILE` comes first because on Windows `HOME` can be a Git Bash path such as `/c/Users/name`. The write replaces the file in place and is not atomic. The mods API documents this behavior.
 
 ## Toasts
 
-Each reading shows a window as `icon 5h: 72%`, with `- resets at <time>` after it when its reset is known. Each window is its own toast, 5-hour first, because a toast does not render a line break and a wrapped single line can split an icon from its label. The `showFiveHour` and `showSevenDay` options turn a window's toasts off; `usage.json` is still written. Toasts appear only when something new happened:
+Each reading shows a window as `icon 5h: 72%`, with `- resets at <time>` after it when its reset is known. The percent is rounded down, so 94.6 never reads as an unannounced 95. Each window is its own toast, 5-hour first, and only a window with news gets one, because a toast does not render a line break and a wrapped single line can split an icon from its label. The `showFiveHour` and `showSevenDay` options turn a window's toasts off; `usage.json` is still written. Toasts appear only when something new happened:
 - **Threshold crossing.** The default levels are 70 and 90, and the `levels` option (up to 5 values) replaces them. 95 is always a level on top of those, and it is the alert level. Each is announced once per window per reset cycle. If a reading crosses several at once, only the highest is announced.
-- **Reset time.** Every announced level adds `- resets at <time>` to that window's text, with the weekday name before "at" when the reset is more than a day away. The time follows the `timeFormat` option.
-- **Window reset.** When a window reports a later reset time than before, its text gets `(window reset)` and its levels are armed again.
+- **Reset time.** Every announced level adds `- resets at <time>` to that window's text, with the weekday name before "at" when the reset falls on another calendar day (in UTC for the UTC format). The time follows the `timeFormat` option.
+- **Window reset.** When a window reports a later reset time than before (the latest reset time seen is kept, so a late, older reading cannot fake one), its text gets `(window reset)` and its levels are armed again.
 - **Write failure.** One toast per failure streak, `usage.json write failed: <error>`.
 
-The icon follows the percentage and is fixed, not tied to the `levels` option: a red circle from 89 percent, a yellow circle from 59 percent, otherwise a green circle. The failure toast uses a warning sign. Each window's icon, label and percentage are joined with non-breaking spaces so a wrapped toast does not split them.
+The icon follows the percentage and is fixed, not tied to the `levels` option: a red circle from 89 percent, a yellow circle from 59 percent, otherwise a green circle. The failure toast uses a warning sign. Icon, label and percentage are joined with non-breaking spaces. In a live test they did not stop a bad wrap, which is why each window has its own toast.
 
-Notice-level toasts last 6 seconds by default and alert-level toasts (95 percent and write failures) last 10. The host adds a "redline plugin" label before the text. The mod cannot change that label.
+Notice-level toasts last 6 seconds by default and alert-level toasts (95 percent and above, and write failures) last 10. The host adds a "redline plugin" label before the text. The mod cannot change that label.
 
-State (the highest level announced per window, the last reset time, whether a failure was already announced) lives in module variables. It resets when the mod reloads or Claude Code restarts. Two VS Code windows each keep their own state.
+The announcement state (the highest level announced per window and its reset time) is kept in memory and saved to the plugin's own store under the key `windows`. Each reading merges the saved state first, so a reload, a restart or a second VS Code window does not repeat a toast. A saved window whose reset time has passed is ignored. Whether a write failure was already announced stays in memory only.
 
 ## Configuration
 
@@ -97,4 +97,4 @@ Observed in live VS Code sessions (Claude Code 2.1.301, 2026-10-19 and 2026-10-2
 
 Checked only with fake data: threshold and reset toast behavior, option handling and clamping, and the write-failure path.
 
-Not yet verified: a threshold or reset toast at a real crossing, whether the non-breaking spaces prevent the wrap seen in a screenshot, how the Off/On picker looks, behavior with other rate-limit kinds, and behavior in the Claude desktop app.
+Verified live on 2026-10-28: threshold and window-reset toasts at real crossings, `/redline`, the time formats and the On/Off pickers. Not yet verified: behavior with other rate-limit kinds, behavior in the Claude desktop app, and the saved announcement state across a reload.

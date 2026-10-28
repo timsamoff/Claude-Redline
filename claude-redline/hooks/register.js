@@ -3,7 +3,7 @@
 
 // Default toast levels, in percent used. Users can replace them with the levels setting.
 const DEFAULT_LEVELS = [70, 90]
-// Always a toast level, on top of the user's levels. It also gets the longer alert duration.
+// Always a toast level, on top of the user's levels. It and anything above it get the longer alert duration.
 const ALERT_AT = 95
 const MAX_LEVELS = 5
 // Icon colors, in percent used: yellow from YELLOW_AT, red from RED_AT. Fixed, not tied to the levels setting.
@@ -16,8 +16,8 @@ const RED = '\u{1F534}'
 const WARN = '\u26A0\uFE0F'
 const NBSP = '\u00A0'
 const TIME_FORMATS = ['System', '12-hour', '24-hour', 'UTC']
-const HOUR_MS = 3600000
-const DAY_MS = 24 * HOUR_MS
+// Key in the plugin's own store for the announcement state, shared across windows and restarts.
+const STORE_KEY = 'windows'
 
 // Toast durations in seconds. Keep in step with userConfig in plugin.json.
 const DEFAULT_TOAST_SECONDS = 6
@@ -43,10 +43,10 @@ function secondsToMs(value, fallbackSeconds) {
   return Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS) * 1000
 }
 
-// Reads the levels setting ("70, 90"): sorted, unique, 1 to 100, at most MAX_LEVELS. Falls back to the defaults if none is valid.
+// Reads the levels setting ("70, 90" or "70%, 90%"): sorted, unique, 1 to 100, at most MAX_LEVELS. Falls back to the defaults if none is valid.
 function parseLevels(value) {
-  const raw = Array.isArray(value) ? value : String(value == null ? '' : value).split(/[\s,;]+/)
-  const nums = [...new Set(raw.map(Number).filter((n) => Number.isFinite(n) && n > 0 && n <= 100))].sort((a, b) => a - b)
+  const raw = (Array.isArray(value) ? value.join(',') : String(value == null ? '' : value)).split(/[\s,;%]+/)
+  const nums = [...new Set(raw.filter((s) => s !== '').map(Number).filter((n) => Number.isFinite(n) && n > 0 && n <= 100))].sort((a, b) => a - b)
   return nums.length ? nums.slice(-MAX_LEVELS) : DEFAULT_LEVELS
 }
 
@@ -67,17 +67,22 @@ function parseTimeFormat(value) {
   return TIME_FORMATS.find((f) => f.toLowerCase() === want) || TIME_FORMATS[0]
 }
 
-// "at 2:20 PM", or "Thursday at 3:00 PM" when the reset is more than a day away. Follows the timeFormat setting.
+// A calendar date as YYYY-MM-DD in the given zone, for comparing days.
+function dayKey(date, zone) {
+  return date.toLocaleDateString('en-CA', zone)
+}
+
+// "at 2:20 PM" for a reset later today, or "Thursday at 3:00 PM" for any other day. Follows the timeFormat setting.
 function resetTime(ms) {
   try {
     const utc = timeFormat === 'UTC'
     const zone = utc ? { timeZone: 'UTC' } : {}
     const clock = { hour: 'numeric', minute: '2-digit', ...zone }
     if (timeFormat === '12-hour') clock.hour12 = true
-    if (timeFormat === '24-hour' || utc) { clock.hour12 = false; clock.hourCycle = 'h23' }
+    if (timeFormat === '24-hour' || utc) Object.assign(clock, { hour: '2-digit', hourCycle: 'h23' })
     const d = new Date(ms)
     let text = 'at ' + d.toLocaleTimeString([], clock) + (utc ? ' UTC' : '')
-    if (ms - Date.now() > DAY_MS) text = d.toLocaleDateString([], { weekday: 'long', ...zone }) + ' ' + text
+    if (dayKey(d, zone) !== dayKey(new Date(), zone)) text = d.toLocaleDateString([], { weekday: 'long', ...zone }) + ' ' + text
     return text
   } catch (err) {
     return ''
@@ -100,9 +105,10 @@ function windowFor(rateLimits, kind) {
   }
 }
 
-// Non-breaking spaces keep the icon, label and percent together when a toast wraps.
+// The percent is shown rounded down, so 94.6 never reads as a 95 that has not been announced.
+// Non-breaking spaces are harmless here but did not stop bad wraps, which is why each window has its own toast.
 function segment(pct, label, note) {
-  return icon(pct) + NBSP + label + ':' + NBSP + pct + '%' + (note || '')
+  return icon(pct) + NBSP + label + ':' + NBSP + Math.floor(pct) + '%' + (note || '')
 }
 
 function failureText(err) {
@@ -125,10 +131,11 @@ function toastEach($, texts, ms) {
   for (const text of texts) $.ui.toast(text, { timeoutMs: ms })
 }
 
+// USERPROFILE first, because on Windows HOME can be a Git Bash path such as /c/Users/name.
 async function homeDir($) {
-  const home = await $.env.get('HOME')
-  if (home) return home
-  return await $.env.get('USERPROFILE')
+  const profile = await $.env.get('USERPROFILE')
+  if (profile) return profile
+  return await $.env.get('HOME')
 }
 
 // Returns a short status string for the debug log. Throws on failure.
@@ -153,39 +160,49 @@ async function writeUsage($, usage) {
   return 'wrote ' + path + ' (5h ' + five.pct + ', 7d ' + seven.pct + ')'
 }
 
-// One toast per reading, covering both windows, only when something new happened.
-function notify($, rateLimits) {
-  const segments = []
-  let show = false
-  let longest = normalMs
+// Merges the saved announcement state, so a reload or a second window does not repeat a toast.
+// A saved window whose reset time has passed is ignored, so a new day does not open with a reset toast.
+async function loadState($) {
+  const saved = await $.store.get(STORE_KEY)
+  if (!saved || typeof saved !== 'object') return
+  for (const [kind] of WINDOWS) {
+    const s = saved[kind]
+    if (!s || !Number.isFinite(s.ms) || !Number.isFinite(s.fired) || s.ms <= Date.now()) continue
+    const cur = state[kind]
+    if (!cur || !Number.isFinite(cur.ms) || s.ms > cur.ms) state[kind] = { ms: s.ms, fired: s.fired }
+    else if (s.ms === cur.ms && s.fired > cur.fired) cur.fired = s.fired
+  }
+}
 
+// Toasts each window that has news: a new level, or a window reset. Windows without news stay quiet.
+function notify($, rateLimits) {
   for (const [kind, label] of WINDOWS) {
     const w = readWindow(rateLimits, kind)
     if (!w || !shown[kind]) continue
     const prev = state[kind]
     let fired = prev ? prev.fired : 0
     let note = ''
+    let news = false
 
     if (prev && Number.isFinite(w.ms) && Number.isFinite(prev.ms) && w.ms > prev.ms) {
       fired = 0
       note = ' (window reset)'
-      show = true
+      news = true
     }
 
     const crossed = levels.filter((t) => w.pct >= t)
     const level = crossed.length ? crossed[crossed.length - 1] : 0
     if (level > fired) {
       fired = level
-      show = true
+      news = true
       if (Number.isFinite(w.ms)) note += ' - resets ' + resetTime(w.ms)
-      if (level >= ALERT_AT) longest = alertMs
     }
 
-    state[kind] = { ms: w.ms, fired }
-    segments.push(segment(w.pct, label, note))
+    // Keep the later reset time, so a late, older reading cannot fake a reset on the next one.
+    const keepPrev = prev && Number.isFinite(prev.ms) && !(w.ms >= prev.ms)
+    state[kind] = { ms: keepPrev ? prev.ms : w.ms, fired }
+    if (news) toastEach($, [segment(w.pct, label, note)], fired >= ALERT_AT ? alertMs : normalMs)
   }
-
-  if (show) toastEach($, segments, longest)
 }
 
 async function handle($, usage, label) {
@@ -208,7 +225,15 @@ async function handle($, usage, label) {
   }
 
   try {
+    await loadState($)
+  } catch (err) {
+    $.ui.log('redline[' + label + '] state load failed: ' + String(err), { to: 'debug' })
+  }
+
+  try {
+    const before = JSON.stringify(state)
     notify($, usage.rateLimits || [])
+    if (JSON.stringify(state) !== before) await $.store.set(STORE_KEY, state)
   } catch (err) {
     $.ui.log('redline[' + label + '] notify failed: ' + String(err), { to: 'debug' })
   }
@@ -242,7 +267,7 @@ export function register(on, options) {
 
   on('session.measure', async ($, e, next) => {
     try {
-      await handle($, e, 'measure:' + e.changed.join(','))
+      await handle($, e, 'measure:' + (e.changed || []).join(','))
     } catch (err) {
       $.ui.log('redline[measure] failed: ' + String(err), { to: 'debug' })
     }

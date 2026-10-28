@@ -46,7 +46,9 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 - Icon colors are fixed by `YELLOW_AT` (59) and `RED_AT` (89), independent of the `levels` setting. Each window gets its own toast (a toast does not render a newline), and `showFiveHour` and `showSevenDay` turn a window off. Reset times follow the `timeFormat` setting.
 - The `/redline` command registers on `session.start` and is served by `command.run`. It only reads, and shows the result in a toast (normal duration) instead of chat text.
 - The `userConfig` defaults and limits in `plugin.json` must equal the constants in `register.js` (`DEFAULT_LEVELS` as the string "70, 90", and the duration constants). JSON cannot import them, so check both when changing either.
-- Build toast text only through `segment()` and `failureText()`, so the toast text cannot drift from the real format. Icon, label and percent are joined with non-breaking spaces.
+- Build toast text only through `segment()` and `failureText()`, so the toast text cannot drift from the real format. Icon, label and percent are joined with non-breaking spaces, which did not stop bad wraps live, so each window gets its own toast and only a window with news is toasted.
+- The announcement state is saved with `$.store` under `windows` and merged on every reading, so reloads and second windows do not repeat toasts. Saved windows whose reset has passed are ignored.
+- `plugin.json` has no `version` until the first real release (see the publishing plan).
 - Functions that take `$` stay in `register.js`. The validator rejects passing `$` to a function imported from another file. Event names passed to `on` must be string literals.
 - Run `claude plugin validate ./claude-redline` after any change to the plugin folder.
 - Never read credential files or call undocumented usage endpoints without Tim's explicit say-so.

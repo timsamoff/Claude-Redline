@@ -8,7 +8,7 @@
     {
       "name": "redline",
       "source": "./claude-redline",
-      "description": "Writes ~/.claude/usage.json and shows usage-limit toasts in VS Code sessions, where the status line never runs."
+      "description": "Writes ~/.claude/usage.json, shows usage-limit toasts in VS Code sessions where the status line never runs, and adds a /redline command."
     }
   ]
 }

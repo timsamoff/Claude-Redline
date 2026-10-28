@@ -118,7 +118,7 @@ export function checkToasts(tree, rules) {
   const call = '$.ui.toast('
   for (let idx = code.indexOf(call); idx !== -1; idx = code.indexOf(call, idx + call.length)) {
     const arg = firstArg(code, idx + call.length).trim()
-    if (!/^(segments\.join\(|failureText\(|text$|'DEMO ' \+ text$)/.test(arg)) {
+    if (!/^(failureText[(]|text$)/.test(arg)) {
       out.push(viol('K3', P.register, code.slice(0, idx).split('\n').length, `toast:${arg}`, `This toast takes its text from "${arg}", not from segment() or failureText().`, 'Build toast text only through segment() and failureText().'))
     }
   }
@@ -128,17 +128,8 @@ export function checkToasts(tree, rules) {
     if (code.slice(idx - 9, idx) === 'function ') continue
     const first = firstArg(code, idx + each.length)
     const texts = firstArg(code, idx + each.length + first.length + 1).trim()
-    if (!/^(segments$|summary[(])/.test(texts)) {
-      out.push(viol('K3', P.register, code.slice(0, idx).split(NL).length, `each:${texts}`, `A toastEach call takes its texts from "${texts}", not from segments or summary().`, 'Build toast text only through segment(), summary() and failureText().'))
-    }
-  }
-  const demo = (code.match(/function demo\([^)]*\) \{[\s\S]*?\n\}/) || [])[0]
-  if (demo) {
-    for (const row of demo.split('\n')) {
-      const m = row.match(/^\s*\[(.*), (?:normalMs|alertMs)\],?\s*$/)
-      if (m && !/segment\(|failureText\(/.test(m[1])) {
-        out.push(viol('K3', P.register, undefined, `demo:${row.trim()}`, `A preview sample is built by hand: ${row.trim()}`, 'Build preview samples with segment() or failureText() so they cannot drift from the real format.'))
-      }
+    if (!/^(segments$|summary[(]|[[]segment[(])/.test(texts)) {
+      out.push(viol('K3', P.register, code.slice(0, idx).split(NL).length, `each:${texts}`, `A toastEach call takes its texts from "${texts}", not from segment() or summary().`, 'Build toast text only through segment(), summary() and failureText().'))
     }
   }
   return out

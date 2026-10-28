@@ -107,7 +107,7 @@ reset()
 const REG = 'claude-redline/hooks/register.js'
 const PJ = 'claude-redline/.claude-plugin/plugin.json'
 
-sub(REG, "const HOUR_MS = 3600000\n", "const HOUR_MS = 3600000\nconst EXTRA = 5\n")
+sub(REG, "const MAX_LEVELS = 5\n", "const MAX_LEVELS = 5\nconst EXTRA = 5\n")
 git(['add', REG])
 blocked('G1: new constant without CLAUDE.md is blocked', commit(), '[G1]', 'named constants')
 w('CLAUDE.md', r('CLAUDE.md') + '\nNote: EXTRA is a new constant.\n')
@@ -148,7 +148,7 @@ git(['add', REG])
 blocked('K2: bare 120 outside the constants', commit(), '[K2]', 'MAX_SECONDS')
 reset()
 
-sub(REG, 'if (level >= ALERT_AT) longest = alertMs', 'if (level >= 95) longest = alertMs')
+sub(REG, 'fired >= ALERT_AT ? alertMs : normalMs', 'fired >= 95 ? alertMs : normalMs')
 git(['add', REG])
 blocked('K2 adversarial: bare 95 in the alert rule is still caught', commit(), '[K2]', 'ALERT_AT')
 reset()
@@ -158,7 +158,7 @@ git(['add', REG])
 blocked('K3: a hand-typed toast is blocked', commit(), '[K3]')
 reset()
 
-sub(REG, 'toastEach($, segments, longest)', "toastEach($, ['hand made'], longest)")
+sub(REG, 'toastEach($, [segment(w.pct, label, note)],', "toastEach($, ['hand made'],")
 git(['add', REG])
 blocked('K3: a toastEach call with hand-typed texts is blocked', commit(), '[K3]')
 reset()
@@ -219,7 +219,7 @@ blocked('R1: dropping a toast level from the README is blocked', commit(), '[R1]
 reset()
 
 // ---- 4. staged content, not the working tree ----
-sub(REG, "const HOUR_MS = 3600000\n", "const HOUR_MS = 3600000\nconst STAGED_ONE = 5\n")
+sub(REG, "const MAX_LEVELS = 5\n", "const MAX_LEVELS = 5\nconst STAGED_ONE = 5\n")
 w('CLAUDE.md', r('CLAUDE.md') + '\nNote: STAGED_ONE.\n')
 git(['add', REG, 'CLAUDE.md'])
 sub(REG, 'Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS)', 'Math.min(Math.max(n, 1), 120)')
@@ -285,7 +285,7 @@ blocked('an EXPIRED exception does not exempt, and is itself reported', commit()
 reset()
 
 sub(REG, 'Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS)', 'Math.min(Math.max(n, 1), 120)')
-sub(REG, "const HOUR_MS = 3600000\n", "const HOUR_MS = 3600000\n\n\n\n\n\n\n\n\n\n")
+sub(REG, "const MAX_LEVELS = 5\n", "const MAX_LEVELS = 5\n\n\n\n\n\n\n\n\n\n")
 exc('2999-01-01')
 git(['add', REG])
 passes('exception is keyed to content: shifting the line by 10 does not break it', commit())

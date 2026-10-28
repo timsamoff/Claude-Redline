@@ -14,7 +14,7 @@ Redline stays out of the way until there's something worth knowing. It uses Clau
 
 - Warns you as you approach your 5-hour and 7-day usage limits
 - Lets you choose when those warnings appear
-- Shows both usage windows in each notification
+- Gives each usage window its own notification
 - Lets you check your current usage anytime with `/redline`
 - Keeps `~/.claude/usage.json` current for scripts and other tools
 
@@ -45,7 +45,7 @@ Redline works automatically once installed.
 
 By default, Redline notifies you the first time either usage window crosses 70% or 90%. A 95% alert is always enabled regardless of your settings, and stays on screen longer. Each notification also shows when that window resets.
 
-When a notification is triggered, Redline shows one toast for each window that is turned on, normally one for the 5-hour window and one for the 7-day window. The icon colors are independent of your notification levels: green below 59%, yellow from 59%, and red from 89%.
+Each usage window gets its own toast, and only the window that crossed a level or reset is shown. `/redline` shows both. Percentages are rounded down, and a reset on another day names the weekday. The icon colors are independent of your notification levels: green below 59%, yellow from 59%, and red from 89%.
 
 ```text
 🟡 5h: 72% - resets at 2:20 PM
@@ -76,7 +76,7 @@ Change Redline's settings through `/plugin` and restart Claude Code for them to 
 | --- | --- | --- |
 | Toast levels (percent) | 70, 90 | Usage percentages that trigger a notification. Enter up to five values from 1 to 100, separated by commas. The 95% alert is always enabled and does not need to be listed. Invalid input uses the default. |
 | Toast duration (seconds) | 6 | How long regular notifications stay on screen |
-| Alert toast duration (seconds) | 10 | How long 95% and write-failure notifications stay on screen |
+| Alert toast duration (seconds) | 10 | How long notifications at 95% and above, and write-failure notifications, stay on screen |
 | Show 5-hour toasts | On | Turn the 5-hour window's toast on or off |
 | Show 7-day toasts | On | Turn the 7-day window's toast on or off |
 | Time format | System | How reset times are shown: System (your computer's setting), 12-hour, 24-hour (both in your local time zone), or UTC |
@@ -91,7 +91,8 @@ It registers a `/redline` command in every session. When the session is running 
 
 - reads the rate-limit windows and context fill Claude Code already has,
 - reads `HOME` or `USERPROFILE` to find your home folder,
-- writes `~/.claude/usage.json`, and
+- writes `~/.claude/usage.json`,
+- saves which levels it has already announced in its own plugin store, so a reload or a second window does not repeat a notification, and
 - shows notifications.
 
 It makes no network calls and starts no processes.
@@ -105,7 +106,7 @@ claude plugin validate ./claude-redline
 ```text
 ./register.js hooks: session.start, command.run{command=redline}, session.measure, turn.complete
 ./register.js answers its own command: command.run{command=redline}
-./register.js calls: $.command.register, $.env.get (via homeDir), $.fs.write (via writeUsage), $.session.surfaces (via handle), $.session.usage, $.ui.log, $.ui.toast (via handle, toastEach)
+./register.js calls: $.command.register, $.env.get (via homeDir), $.fs.write (via writeUsage), $.session.surfaces (via handle), $.session.usage, $.store.get (via loadState), $.store.set (via handle), $.ui.log, $.ui.toast (via handle, toastEach)
 ./register.js env writes: nothing
 ./register.js env reads: HOME, USERPROFILE
 ```
@@ -147,7 +148,7 @@ Percentages and `updated_at` are numbers. The `*_resets_at` values are epoch sec
 
 Redline is early and intentionally small.
 
-Version **0.0.1** has been verified in live VS Code sessions with Claude Code 2.1.301. The plugin loads, receives both usage windows, keeps `usage.json` updated, and displays notifications with the correct icons.
+The current version has been verified in live VS Code sessions with Claude Code 2.1.301. The plugin loads, receives both usage windows, keeps `usage.json` updated, and displays notifications with the correct icons.
 
 Threshold notifications, the `/redline` command, time-format options, and the 5-hour and 7-day On/Off settings have also been verified in live sessions, along with the notification for a usage window resetting.
 
