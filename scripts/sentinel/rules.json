@@ -1,0 +1,65 @@
+{
+  "paths": {
+    "pluginDir": "claude-redline",
+    "plugin": "claude-redline/.claude-plugin/plugin.json",
+    "register": "claude-redline/hooks/register.js",
+    "hooks": "claude-redline/hooks/hooks.json",
+    "marketplace": ".claude-plugin/marketplace.json",
+    "claude": "CLAUDE.md",
+    "readme": "README.md",
+    "design": "DESIGN.md",
+    "license": "LICENSE"
+  },
+  "commit": {
+    "subjectMax": 72,
+    "bulletsMax": 4,
+    "bulletMax": 80,
+    "allowedTrailers": [],
+    "attributionPatterns": [
+      "^\\s*co-authored-by:",
+      "generated with",
+      "\\u{1F916}",
+      "claude-session:",
+      "claude\\.ai/code"
+    ],
+    "agentVoicePhrases": [
+      "at the user's direction",
+      "at the user's request",
+      "per the user's request",
+      "user's direction",
+      "as requested by",
+      "as requested",
+      "the user asked",
+      "this session",
+      "this conversation"
+    ]
+  },
+  "readme": {
+    "static": [
+      "claude plugin marketplace add timsamoff/Claude-Redline",
+      "claude plugin install redline@timsamoff-tools",
+      "claude --plugin-dir ./claude-redline",
+      "2.1.299",
+      "Pro and Max",
+      "MIT"
+    ]
+  },
+  "icon": { "minPx": 512, "maxPx": 2048, "maxBytes": 2097152 },
+  "watch": [
+    "claude-redline/",
+    ".claude-plugin/",
+    "README.md",
+    "DESIGN.md",
+    "CLAUDE.md",
+    "LICENSE",
+    "scripts/sentinel/rules.json"
+  ],
+  "validatorWatch": ["claude-redline/", ".claude-plugin/", "README.md"],
+  "reminderWatch": [
+    "claude-redline/hooks/register.js",
+    "claude-redline/.claude-plugin/plugin.json",
+    "README.md",
+    "DESIGN.md",
+    "CLAUDE.md"
+  ]
+}

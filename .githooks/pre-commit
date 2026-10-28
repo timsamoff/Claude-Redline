@@ -1,0 +1,11 @@
+#!/bin/sh
+# Sentinel hook shim: finds Node, then runs the checks. A missing Node blocks the commit with a plain message.
+root="$(git rev-parse --show-toplevel)" || exit 1
+node_bin="$(command -v node)"
+[ -z "$node_bin" ] && [ -x "/c/Program Files/nodejs/node.exe" ] && node_bin="/c/Program Files/nodejs/node.exe"
+if [ -z "$node_bin" ]; then
+  echo "SENTINEL could not verify: Node.js was not found, so the commit checks could not run." >&2
+  echo "Install Node.js or add it to PATH, then try again." >&2
+  exit 2
+fi
+exec "$node_bin" "$root/scripts/sentinel/check.mjs" --hook pre-commit
