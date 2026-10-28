@@ -1,0 +1,94 @@
+# Claude-Redline: Design
+
+Claude-Redline is a Claude Code plugin mod. In VS Code sessions it writes the current rate-limit usage to `~/.claude/usage.json` and shows a toast when a limit window reaches 70, 90 or 95 percent. The plugin ID is `redline`.
+
+## Purpose
+
+A terminal status line script can write `~/.claude/usage.json`, but the Claude Code VS Code extension does not run a status line, so the file goes stale in VS Code sessions. The usage data does reach plugin mods through `$.session.usage()`. Claude-Redline reads it there and writes the same file in the same format, so tools that read the file keep working.
+
+## Components
+
+| Path | Role |
+|---|---|
+| `claude-redline/.claude-plugin/plugin.json` | Manifest: plugin ID, description, and the user options |
+| `claude-redline/hooks/hooks.json` | Points Claude Code at the hooks module |
+| `claude-redline/hooks/register.js` | The hooks module, about 210 lines |
+| `prod/` | Icon artwork: an Illustrator source and an SVG export |
+
+Claude Code also generates `claude-redline/.claude-plugin/types/` and `claude-redline/tsconfig.json` for editor type hints. Both are git-ignored and not needed at runtime.
+
+## Runtime model
+
+The hooks module registers two hooks:
+- `session.measure`: fires after each turn and when a usage figure changes (context, cost or a rate-limit window).
+- `turn.complete`: fires when a turn ends. This hook reads the figures itself with `$.session.usage()`.
+
+Both hooks run the same handler. The handler does nothing unless `$.session.surfaces()` includes `vscode`. That keeps the plugin from writing alongside a terminal status line from the same session. Otherwise it does two independent things: write the file, then decide whether to toast. A failure in one does not stop the other.
+
+The mod calls only these parts of the mods API: `$.session.surfaces`, `$.session.usage`, `$.env.get` (for `HOME` and `USERPROFILE`), `$.fs.write`, `$.ui.toast` and `$.ui.log` (to the debug log). It makes no network calls and starts no processes. `claude plugin validate` lists these calls.
+
+## Data
+
+Each rate-limit entry has a `kind`, a `percentUsed` (0 to 100, at most one decimal) and a `resetsAt` (an ISO 8601 string). Only the `five_hour` and `seven_day` kinds are used. Other kinds, such as a spend limit, are ignored.
+
+`usage.json` has six keys:
+
+| Key | Type | Source |
+|---|---|---|
+| `five_hour_pct` | number or null | `percentUsed` of the `five_hour` window |
+| `seven_day_pct` | number or null | `percentUsed` of the `seven_day` window |
+| `five_hour_resets_at` | string | epoch seconds as text, or an empty string |
+| `seven_day_resets_at` | string | epoch seconds as text, or an empty string |
+| `context_pct` | number or null | the live context window fill |
+| `updated_at` | number | epoch seconds when the file was written |
+
+A missing window gives `null` and an empty string. If both windows are missing, no file is written. The format matches the maintainer's own terminal status line script, which is outside this repository.
+
+The file is written to `<home>/.claude/usage.json`, where `<home>` is `HOME`, or `USERPROFILE` if `HOME` is unset. The write replaces the file in place and is not atomic. The mods API documents this behavior.
+
+## Toasts
+
+Each reading produces at most one toast, covering both windows, in the form `icon 5h 72% | icon 7d 32%`. A toast appears only when something new happened:
+- **Threshold crossing.** The levels are 70 (notice), 90 and 95 (alert). Each is announced once per window per reset cycle. If a reading crosses several at once, only the highest is announced.
+- **Reset time.** Crossing 90 or 95 adds `resets <local time>` to that window's text.
+- **Window reset.** When a window reports a later reset time than before, its text gets `(window reset)` and its levels are armed again.
+- **Write failure.** One toast per failure streak, `usage.json write failed: <error>`.
+
+The icon follows the percentage: a red circle at 95 or more, a yellow circle at 70 or more, otherwise a green circle. The failure toast uses a warning sign. Each window's icon, label and percentage are joined with non-breaking spaces so a wrapped toast does not split them.
+
+Notice-level toasts last 6 seconds by default and alert-level toasts (95 percent and write failures) last 10. The host adds a "redline plugin" label before the text. The mod cannot change that label.
+
+State (the highest level announced per window, the last reset time, whether a failure was already announced) lives in module variables. It resets when the mod reloads or Claude Code restarts. Two VS Code windows each keep their own state.
+
+## Configuration
+
+Options are declared in `plugin.json` under `userConfig` and reach the mod as the `options` argument of `register(on, options)`.
+
+| Option | Default | Range | Effect |
+|---|---|---|---|
+| `toastSeconds` | 6 | 1 to 120 | Duration of notice-level toasts |
+| `alertToastSeconds` | 10 | 1 to 120 | Duration of alert-level and failure toasts |
+| `previewToasts` | Off | Off or On | When On, shows one sample of each toast style, labeled DEMO, on the first turn after a restart |
+
+The defaults and range exist in both `plugin.json` and `register.js` and must match. A change to an option takes effect after Claude Code restarts. The `options` field on `previewToasts` makes the plugin require Claude Code v2.1.271 or later, according to the plugin docs.
+
+## Constraints of the mod runtime
+
+- The hooks module has no Node and no DOM. Every effect goes through `$`.
+- `$` can be passed to top-level functions in the same file, but not to functions imported from another file, so those functions stay in `register.js`. Only pure helpers could move.
+- Event names passed to `on` must be string literals.
+- Module state is per process and is rebuilt when the mod reloads.
+- `session.measure` fires often (context and cost changes included), so the file is rewritten frequently. In one 50-minute window on 2026-10-28, the log shows 46 writes, with a longest gap of 504 seconds.
+- A `session.measure` or `turn.complete` event can arrive with an empty `surfaces` list. The handler skips it. Three such events occurred in the same window.
+
+## Verification status
+
+Observed in live VS Code sessions (Claude Code 2.1.301, 2026-10-19 and 2026-10-28):
+- The mod loads and both rate-limit windows arrive, on a 0 to 100 scale.
+- `surfaces` is `["vscode"]`.
+- `usage.json` is written in the correct format, keeps updating, and followed a window reset.
+- Toasts render with the emoji icons. The duration options can be changed in `/plugin`.
+
+Checked only with fake data: threshold and reset toast behavior, option handling and clamping, and the write-failure path.
+
+Not yet verified: a threshold or reset toast at a real crossing, whether the non-breaking spaces prevent the wrap seen in a screenshot, how the Off/On picker looks, behavior with other rate-limit kinds, and behavior in the Claude desktop app.
