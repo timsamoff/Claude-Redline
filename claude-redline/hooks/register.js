@@ -1,28 +1,37 @@
-// Claude-Redline. In VS Code sessions only:
-//  - writes ~/.claude/usage.json in the same format as ~/.claude/statusline.sh
-//  - toasts when a rate-limit window crosses 70, 90 or 95 percent (once per window
-//    per reset cycle), when a window resets, and once if the write fails.
-// Routine results go to the debug log, not the transcript.
+// Claude-Redline: writes ~/.claude/usage.json and shows usage toasts in VS Code sessions.
+// Routine results go to the debug log, and CLAUDE.md and DESIGN.md hold the format and toast rules.
 
-const THRESHOLDS = [70, 90, 95]
+// Toast levels, in percent used. The icons and the rules below follow these.
+const NOTICE_AT = 70
+const RESET_TIME_AT = 90
+const ALERT_AT = 95
+const THRESHOLDS = [NOTICE_AT, RESET_TIME_AT, ALERT_AT]
 const WINDOWS = [['five_hour', '5h'], ['seven_day', '7d']]
 const GREEN = '\u{1F7E2}'
 const YELLOW = '\u{1F7E1}'
 const RED = '\u{1F534}'
 const WARN = '\u26A0\uFE0F'
+const NBSP = '\u00A0'
+const SEPARATOR = ' | '
+
+// Toast durations in seconds. Keep in step with userConfig in plugin.json.
+const DEFAULT_TOAST_SECONDS = 6
+const DEFAULT_ALERT_SECONDS = 10
+const MIN_SECONDS = 1
+const MAX_SECONDS = 120
 
 // Per window: { ms: reset time in ms, fired: highest threshold already toasted }.
 const state = { five_hour: null, seven_day: null }
 let writeFailed = false
 
 // Toast durations in ms. Replaced from userConfig in register().
-let normalMs = 6000
-let alertMs = 10000
+let normalMs = DEFAULT_TOAST_SECONDS * 1000
+let alertMs = DEFAULT_ALERT_SECONDS * 1000
 
-function secondsToMs(value, fallbackMs) {
+function secondsToMs(value, fallbackSeconds) {
   const n = Number(value)
-  if (!Number.isFinite(n) || n <= 0) return fallbackMs
-  return Math.min(Math.max(n, 1), 120) * 1000
+  if (!Number.isFinite(n) || n <= 0) return fallbackSeconds * 1000
+  return Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS) * 1000
 }
 
 // Preview: when the previewToasts option is on, shows each toast style once on the
@@ -32,8 +41,8 @@ let demoOn = false
 let demoShown = false
 
 function icon(pct) {
-  if (pct >= 95) return RED
-  if (pct >= 70) return YELLOW
+  if (pct >= ALERT_AT) return RED
+  if (pct >= NOTICE_AT) return YELLOW
   return GREEN
 }
 
@@ -45,14 +54,29 @@ function resetTime(ms) {
   }
 }
 
-function windowFor(rateLimits, kind) {
+// One window's percent used and reset time (ms, NaN when absent), or null if missing.
+function readWindow(rateLimits, kind) {
   const w = (rateLimits || []).find((r) => r.kind === kind)
+  if (!w) return null
+  return { pct: w.percentUsed, ms: w.resetsAt ? Date.parse(w.resetsAt) : NaN }
+}
+
+function windowFor(rateLimits, kind) {
+  const w = readWindow(rateLimits, kind)
   if (!w) return { pct: null, resetsAt: '' }
-  const ms = w.resetsAt ? Date.parse(w.resetsAt) : NaN
   return {
-    pct: w.percentUsed,
-    resetsAt: Number.isFinite(ms) ? String(Math.floor(ms / 1000)) : '',
+    pct: w.pct,
+    resetsAt: Number.isFinite(w.ms) ? String(Math.floor(w.ms / 1000)) : '',
   }
+}
+
+// Non-breaking spaces keep the icon, label and percent together when a toast wraps.
+function segment(pct, label, note) {
+  return icon(pct) + NBSP + label + NBSP + pct + '%' + (note || '')
+}
+
+function failureText(err) {
+  return WARN + ' usage.json write failed: ' + String(err)
 }
 
 async function homeDir($) {
@@ -90,43 +114,44 @@ function notify($, rateLimits) {
   let longest = normalMs
 
   for (const [kind, label] of WINDOWS) {
-    const w = rateLimits.find((r) => r.kind === kind)
+    const w = readWindow(rateLimits, kind)
     if (!w) continue
-    const ms = w.resetsAt ? Date.parse(w.resetsAt) : NaN
     const prev = state[kind]
     let fired = prev ? prev.fired : 0
     let note = ''
 
-    if (prev && Number.isFinite(ms) && Number.isFinite(prev.ms) && ms > prev.ms) {
+    if (prev && Number.isFinite(w.ms) && Number.isFinite(prev.ms) && w.ms > prev.ms) {
       fired = 0
       note = ' (window reset)'
       show = true
     }
 
-    const crossed = THRESHOLDS.filter((t) => w.percentUsed >= t)
+    const crossed = THRESHOLDS.filter((t) => w.pct >= t)
     const level = crossed.length ? crossed[crossed.length - 1] : 0
     if (level > fired) {
       fired = level
       show = true
-      if (level >= 90 && Number.isFinite(ms)) note += ' resets ' + resetTime(ms)
-      if (level >= 95) longest = alertMs
+      if (level >= RESET_TIME_AT && Number.isFinite(w.ms)) note += ' resets ' + resetTime(w.ms)
+      if (level >= ALERT_AT) longest = alertMs
     }
 
-    state[kind] = { ms, fired }
-    segments.push(icon(w.percentUsed) + ' ' + label + ' ' + w.percentUsed + '%' + note)
+    state[kind] = { ms: w.ms, fired }
+    segments.push(segment(w.pct, label, note))
   }
 
-  if (show) $.ui.toast(segments.join(' | '), { timeoutMs: longest })
+  if (show) $.ui.toast(segments.join(SEPARATOR), { timeoutMs: longest })
 }
 
 function demo($) {
+  const soon = ' resets ' + resetTime(Date.now() + 3600000)
+  const sevenDay = segment(32, '7d')
   const samples = [
-    [GREEN + ' 5h 41% | ' + GREEN + ' 7d 32%', normalMs],
-    [YELLOW + ' 5h 72% | ' + GREEN + ' 7d 32%', normalMs],
-    [YELLOW + ' 5h 91% resets ' + resetTime(Date.now() + 3600000) + ' | ' + GREEN + ' 7d 32%', normalMs],
-    [RED + ' 5h 96% resets ' + resetTime(Date.now() + 3600000) + ' | ' + GREEN + ' 7d 32%', alertMs],
-    [GREEN + ' 5h 3% (window reset) | ' + GREEN + ' 7d 32%', normalMs],
-    [WARN + ' usage.json write failed: Error: EACCES', alertMs],
+    [segment(41, '5h') + SEPARATOR + sevenDay, normalMs],
+    [segment(72, '5h') + SEPARATOR + sevenDay, normalMs],
+    [segment(91, '5h', soon) + SEPARATOR + sevenDay, normalMs],
+    [segment(96, '5h', soon) + SEPARATOR + sevenDay, alertMs],
+    [segment(3, '5h', ' (window reset)') + SEPARATOR + sevenDay, normalMs],
+    [failureText(new Error('EACCES')), alertMs],
   ]
   for (const [text, ms] of samples) $.ui.toast('DEMO ' + text, { timeoutMs: ms })
 }
@@ -146,7 +171,7 @@ async function handle($, usage, label) {
     $.ui.log('redline[' + label + '] write failed: ' + String(err), { to: 'debug' })
     if (!writeFailed) {
       writeFailed = true
-      $.ui.toast(WARN + ' usage.json write failed: ' + String(err), { timeoutMs: alertMs })
+      $.ui.toast(failureText(err), { timeoutMs: alertMs })
     }
   }
 
@@ -158,8 +183,8 @@ async function handle($, usage, label) {
 }
 
 export function register(on, options) {
-  normalMs = secondsToMs(options && options.toastSeconds, 6000)
-  alertMs = secondsToMs(options && options.alertToastSeconds, 10000)
+  normalMs = secondsToMs(options && options.toastSeconds, DEFAULT_TOAST_SECONDS)
+  alertMs = secondsToMs(options && options.alertToastSeconds, DEFAULT_ALERT_SECONDS)
   demoOn = options != null && ['on', 'true'].includes(String(options.previewToasts).toLowerCase())
 
   on('session.measure', async ($, e, next) => {
