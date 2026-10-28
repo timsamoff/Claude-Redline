@@ -86,6 +86,7 @@ Write it to Sentinel-Notes/HANDOFF.md if the project has a Sentinel-Notes/ folde
 Project override: here the handoff lives at `HANDOFF.md` in the project root even though `Sentinel-Notes/` exists, because `Sentinel-Notes/` is local-only and a remote session sees only committed files.
 
 - Rewrite it whenever the state of unfinished work changes (a step finishes, the plan changes, an attempt fails), not only at the end, so a session that ends without warning leaves a handoff at most one step behind.
+- Every commit that finishes or changes a step touches `HANDOFF.md` in that same commit, so the handoff is never behind the code. A commit that changes nothing about unfinished work (a typo fix, say) can leave it alone. Do not put a commit hash in the handoff, because the hash does not exist until the commit is made.
 - When a later session finishes the work it describes, clear it. A stale handoff is worse than none.
 - Anything in it that becomes settled moves to the file named in "Where information goes".
 - At the start of every new session, before answering the first message, read `HANDOFF.md` and the open items in `Sentinel-Notes/TODO.md` (if that folder exists on this machine), in that order. If a handoff exists, say briefly what it describes. Compare it with the working tree, and if there are uncommitted changes it does not mention, say so in the same line.
