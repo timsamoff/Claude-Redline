@@ -1,26 +1,31 @@
 # Handoff
 
 ## Current task and status
-Redline 0.0.1 is pushed (`1b8f016`). This session added the `levels` setting, the `/redline` command (shows toasts), a fixed 95 percent toast, fixed icon colors (green under 59, yellow from 59, red from 89), one toast per window with On/Off settings, a `timeFormat` setting, and the README icon in `assets/`. The Preview option was removed. Tests (15), the validator, the gate checks and the integration suite (113 scenarios) all pass. Verified live (Tim): real threshold toasts at 70, 90 and 95, the `timeFormat` choices and the On/Off pickers. Also from a screenshot: `/redline` runs and shows two toasts, 5h above 7d, with the lowercase host label "redline plugin" (the host uses the plugin ID, so that cannot change).
+Redline 0.0.1 is pushed (`56df4cb`). Verified live (Tim): threshold toasts, `/redline`, the `timeFormat` choices and the On/Off pickers. Unverified: the window-reset toast, which only happens when a window rolls over.
+
+In progress: Tim edited `README.md` (uncommitted) and asked me to verify it against the code and to "fix the screenshot". I audited the edits and stopped at the usage limit before fixing anything.
 
 ## Files touched
-- `claude-redline/hooks/register.js`: levels, ALERT_AT, YELLOW_AT and RED_AT, `/redline`, window toggles, time format.
-- `claude-redline/.claude-plugin/plugin.json`: options `levels`, `showFiveHour`, `showSevenDay`, `timeFormat`; `previewToasts` removed.
-- `tests/redline.test.mjs`: new, run with `node --test tests/redline.test.mjs`.
-- `scripts/sentinel/`: K1, K2, R1, K3 and signals updated for the new constants.
-- `README.md`, `DESIGN.md`, `CLAUDE.md`: updated to match. `assets/` holds the README icon and `cr-screenshot.png` (centered, 349 px wide in the README).
+- `README.md`: Tim's uncommitted rewrite of the intro, Usage, Settings and Status wording. The screenshot block is gone from it (see below). I have not edited it this round.
+- `HANDOFF.md`: this file.
+
+## Audit of Tim's README edits (against `register.js`)
+- Accurate: the 95% alert always on, the icon cutoffs, the Settings table, the alert duration text, `/redline` showing only the windows that are on, and the Status wording. Gate checks pass on the file as it stands.
+- Wrong or missing: "Redline shows two toasts" is untrue when a window is turned off, so say "one toast per window that is on".
+- Wrong or missing: the Limits section says only that usage data is written in VS Code. Threshold and reset toasts also appear only in VS Code (`handle()` skips other surfaces), while `/redline` registers everywhere.
+- Style, not accuracy: "Once installed, Redline stays out of the way..." repeats the paragraph before it.
+- Missing: the screenshot block, `<p align="center"><img src="assets/cr-screenshot.png" alt="Two Redline toasts in VS Code, one for the 5-hour window and one for the 7-day window" width="349px"></p>`. It was after the text example in Usage. Tim says to fix it, so put it back unless he meant something else.
 
 ## Next step
-Reload the VS Code window and check live: a window-reset toast (it fires when a window's reset time passes and the percentage drops, so it can only be seen when that happens). Then work through `Sentinel-Notes/TODO.md`, starting with D4 (review the settings wording).
+Ask Tim what "fix the screenshot" means if it is not "restore it". Otherwise re-add the block above after the text example in the Usage section of `README.md`, apply the two accuracy fixes (one toast per window that is on, and the VS Code-only toast note in Limits) if Tim agrees, run `node scripts/sentinel/check.mjs`, and ask before committing.
 
 ## Open questions
 - Keep "2.1.299" as the minimum version in the README? It is unverified.
 - `version`: omit it or pin 1.0.0 at release.
 - Repo visibility, and directory submission prep (copy the PNG into the plugin folder).
 - Custom levels now differ from `statusline.sh` cutoffs (TODO F7).
-- The folder rename to Claude-Redline goes last (`scratch/rename-project.ps1`).
+- The folder rename to Claude-Redline goes last (`scratch/rename-project.ps1`). TODO D4 (review the settings wording) is open.
 
 ## Tried and failed
-- Newlines in a toast: not rendered, so the windows are separate toasts.
-- A non-breaking space between icon and label did not stop a bad wrap, and neither did removing the space. Two toasts replaced them.
-- The Edit and Write tools sometimes fail with "classifier gave no verdict". Node patch scripts in `scratch/` worked.
+- Newlines in a toast are not rendered, so each window is its own toast.
+- Edit and Write sometimes fail with "classifier gave no verdict". Node patch scripts in `scratch/` work. In heredocs, write backslashes with `String.fromCharCode(92)`, because the tool layer mangles them.
