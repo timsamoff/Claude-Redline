@@ -7,6 +7,8 @@ Redline is pushed (`01c297e`) and the tree is clean. The code review's findings 
 None pending. The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading, and `displayName` changes none of them (recorded in `CLAUDE.md`).
 
 ## Next step
+**First, remind Tim to run the P7 live checks** (he asked on 2026-10-28 before logging off). Steps: set Toast levels to a value just below one window's current usage but above the other's (run `/redline` to see them), restart Claude Code, send a prompt, and expect one toast for only that window. Then reload the VS Code window and open a second window, and expect no repeat toast. The weekday-after-midnight check only shows when the 5-hour reset falls after midnight. Set Toast levels back to `70, 90` afterward.
+
 P1 passed: in an isolated config, `claude plugin marketplace add timsamoff/Claude-Redline` and `claude plugin install redline@timsamoff-tools` worked from GitHub. The installed copy has only the three plugin files, matches the repo byte for byte, and validates. The one thing it could not do is start a session, so TODO P9 is Tim's: install it in the real config, remove `CLAUDE_CODE_PLUGIN_DIRS` from `~/.claude/settings.json`, and confirm it loads in VS Code. The GitHub topics are set (P6 done). Other open items: P7 (three live checks), P8 (folder rename, last), D5 (directory submission), F7 (icon colors, later).
 
 ## Open questions
