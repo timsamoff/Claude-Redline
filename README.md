@@ -153,7 +153,7 @@ Redline is early and intentionally small.
 
 Version **0.0.1** has been verified in live VS Code sessions with Claude Code 2.1.301. The plugin loads, receives both usage windows, keeps `usage.json` updated, and displays notifications with the correct icons.
 
-Threshold and reset behavior has also been tested with simulated usage data. The `/redline` command and the `levels` setting are new and have not been verified in a live session yet.
+The threshold notifications, the `/redline` command, the time format choices and the On/Off settings have also been verified in live sessions. The notification for a usage window resetting has been tested only with simulated usage data.
 
 If you run into something, open an issue.
 
