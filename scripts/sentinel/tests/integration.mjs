@@ -202,7 +202,7 @@ git(['add', 'claude-redline/.claude-plugin/icon.png', 'CLAUDE.md'])
 passes('K8: a valid 512 px PNG icon passes', commit())
 reset()
 
-cpSync(join(repo, 'prod/claude-redline-icon.svg'), join(repo, 'claude-redline/.claude-plugin/icon.svg'))
+cpSync(join(repo, 'prod/claude-redline-icon_02.svg'), join(repo, 'claude-redline/.claude-plugin/icon.svg'))
 w('CLAUDE.md', r('CLAUDE.md') + '\nNote: icon.\n')
 git(['add', 'claude-redline/.claude-plugin/icon.svg', 'CLAUDE.md'])
 blocked('K8: an SVG icon is blocked', commit(), '[K8]', 'SVG')

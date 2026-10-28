@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Redline_Icon" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
+  <!-- Generator: Adobe Illustrator 30.8.2, SVG Export Plug-In . SVG Version: 2.1.4 Build 7)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#linear-gradient2);
+      }
+
+      .st1 {
+        stroke: #fff;
+        stroke-opacity: .18;
+        stroke-width: 2px;
+      }
+
+      .st1, .st2, .st3, .st4, .st5, .st6, .st7 {
+        fill: none;
+      }
+
+      .st8 {
+        fill: url(#radial-gradient);
+        stroke: #141413;
+        stroke-width: 3.28px;
+      }
+
+      .st8, .st2, .st3, .st5, .st6, .st7 {
+        stroke-miterlimit: 4.37;
+      }
+
+      .st2, .st3 {
+        stroke-width: 6.55px;
+      }
+
+      .st2, .st3, .st5, .st6, .st7 {
+        stroke-linecap: round;
+      }
+
+      .st2, .st6 {
+        stroke: #f0eee6;
+      }
+
+      .st9 {
+        fill: #d97757;
+      }
+
+      .st3, .st5, .st7 {
+        stroke: #e5483a;
+      }
+
+      .st10 {
+        fill: url(#linear-gradient1);
+      }
+
+      .st5, .st6 {
+        stroke-width: 10.92px;
+      }
+
+      .st11 {
+        fill: url(#radial-gradient1);
+      }
+
+      .st12 {
+        clip-path: url(#clippath-1);
+      }
+
+      .st6 {
+        opacity: .9;
+      }
+
+      .st6, .st13, .st14 {
+        isolation: isolate;
+      }
+
+      .st13 {
+        opacity: .5;
+      }
+
+      .st7 {
+        stroke-width: 17.48px;
+      }
+
+      .st14 {
+        fill: #f0b8a3;
+        opacity: .7;
+      }
+
+      .st15 {
+        fill: url(#linear-gradient);
+      }
+
+      .st16 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="-1402.67" y1="1.12" x2="-1402.67" y2="2.16" gradientTransform="translate(695978 -558) scale(496)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8a867c"/>
+      <stop offset=".5" stop-color="#2d2c2a"/>
+      <stop offset="1" stop-color="#141413"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient1" x1="-1402.57" y1="1.16" x2="-1402.57" y2="2.2" gradientTransform="translate(673490 -550) scale(480)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3d3d3a"/>
+      <stop offset=".45" stop-color="#1f1e1d"/>
+      <stop offset="1" stop-color="#141413"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient" cx="-1376.39" cy="12.07" fx="-1376.39" fy="12.07" r=".81" gradientTransform="translate(66412.3856 -323.0359) scale(48.07)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f0eee6"/>
+      <stop offset=".5" stop-color="#9a968a"/>
+      <stop offset="1" stop-color="#2b2a27"/>
+    </radialGradient>
+    <clipPath id="clippath">
+      <rect class="st4" x="14.1" y="12.94" width="485.57" height="485.57" rx="109.25" ry="109.25"/>
+    </clipPath>
+    <radialGradient id="radial-gradient1" cx="-1399.63" cy="2.86" fx="-1399.63" fy="2.86" r=".51" gradientTransform="translate(336305.5 -336) scale(240)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d97757" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#d97757" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="clippath-1">
+      <rect class="st4" x="8.26" y="8.26" width="495.48" height="495.48" rx="111.48" ry="111.48"/>
+    </clipPath>
+    <linearGradient id="linear-gradient2" x1="-1402.57" y1="2.68" x2="-1402.57" y2="3.72" gradientTransform="translate(673490 -550) scale(480 207.75)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect id="Base" class="st15" width="512" height="512" rx="114" ry="114"/>
+  <rect id="Overlay" class="st10" x="8.26" y="8.26" width="495.48" height="495.48" rx="108" ry="108"/>
+  <g id="Gauge">
+    <path id="Semicircle" class="st6" d="M139.63,384.12c-64.7-64.78-64.64-169.74.13-234.45,64.78-64.7,169.74-64.64,234.45.13,44.02,44.07,59.62,109.09,40.39,168.33"/>
+    <g id="Redline_Glow">
+      <path class="st7" d="M414.6,318.14c-8.09,24.88-21.95,47.49-40.45,65.98"/>
+    </g>
+    <path id="Redline" class="st5" d="M414.6,318.14c-8.09,24.88-21.95,47.49-40.45,65.98"/>
+    <g id="Gauge_Markers">
+      <g id="White_Markers">
+        <line class="st2" x1="163.11" y1="360.64" x2="149.04" y2="374.7"/>
+        <line class="st2" x1="130.76" y1="307.84" x2="111.84" y2="313.99"/>
+        <line class="st2" x1="125.9" y1="246.11" x2="106.25" y2="243"/>
+        <line class="st2" x1="149.59" y1="188.91" x2="133.5" y2="177.21"/>
+        <line class="st2" x1="196.68" y1="148.69" x2="187.65" y2="130.97"/>
+        <line class="st2" x1="256.89" y1="134.24" x2="256.89" y2="114.34"/>
+        <line class="st2" x1="317.1" y1="148.69" x2="326.13" y2="130.97"/>
+        <line class="st2" x1="364.18" y1="188.91" x2="380.28" y2="177.21"/>
+        <line class="st2" x1="387.88" y1="246.11" x2="407.53" y2="243"/>
+      </g>
+      <g id="Red_Markers">
+        <line class="st3" x1="383.02" y1="307.84" x2="401.94" y2="313.99"/>
+        <line class="st3" x1="350.67" y1="360.64" x2="364.73" y2="374.7"/>
+      </g>
+    </g>
+    <g id="Needle">
+      <polygon id="Shadow" class="st13" points="256.78 278.02 382.77 347.43 263.63 266.75 236.66 257.91 256.78 278.02"/>
+      <polygon id="Needle1" class="st9" points="253.46 272.5 379.45 341.9 260.31 261.22 233.35 252.38 253.46 272.5"/>
+      <polygon id="Highlight" class="st14" points="253.46 272.5 379.45 341.9 256.89 266.86 253.46 272.5"/>
+    </g>
+    <circle id="Gray_Gradient_Center" class="st8" cx="256.89" cy="266.86" r="24.31"/>
+    <circle id="Red_Center" class="st9" cx="256.89" cy="266.86" r="7.74"/>
+    <g id="Glow">
+      <g class="st16">
+        <circle id="Glow1" class="st11" cx="393.96" cy="350.82" r="121.39"/>
+      </g>
+    </g>
+  </g>
+  <g id="Top_Fade">
+    <g class="st12">
+      <g id="Top_Fade1">
+        <path id="Top_Fade_Path" class="st0" d="M8.26,8.26h495.48v179.61c-99.1,46.45-396.39,46.45-495.48,0,0,0,0-179.61,0-179.61Z"/>
+      </g>
+    </g>
+  </g>
+  <rect id="Inner_Stroke" class="st1" x="9.81" y="9.81" width="492.39" height="492.39" rx="106.5" ry="106.5"/>
+</svg>
