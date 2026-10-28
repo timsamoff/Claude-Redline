@@ -167,6 +167,31 @@ export function checkIcon(tree, rules) {
   return out
 }
 
+// R2: the public docs are structurally sound: code fences balance, the page is not wrapped in one, and every relative link or image resolves.
+export function checkDocStructure(tree, rules) {
+  const out = []
+  for (const file of [rules.paths.readme, rules.paths.design]) {
+    const text = tree.text(file)
+    if (text == null) continue
+    const lines = text.split('\n')
+    const fences = lines.filter((l) => /^\s*```/.test(l)).length
+    const first = lines.find((l) => l.trim() !== '')
+    if (first && /^\s*```(markdown|md)\b/i.test(first)) {
+      out.push(viol('R2', file, lines.indexOf(first) + 1, 'wrapped', `${file} starts with a ${first.trim()} fence, so GitHub would show the whole page as one code block.`, 'Remove the outer fence at the top and at the bottom.'))
+    } else if (fences % 2) {
+      out.push(viol('R2', file, undefined, `fences:${fences}`, `${file} has an odd number of code fences (${fences}), so one block is never closed.`, 'Close or remove the stray fence.'))
+    }
+    const body = text.replace(/^[ \t]*```[\s\S]*?^[ \t]*```[^\n]*$/gm, '')
+    const targets = [...body.matchAll(/\]\(([^)\s]+)\)/g), ...body.matchAll(/<img[^>]*\ssrc="([^"]+)"/g), ...body.matchAll(/<a[^>]*\shref="([^"]+)"/g)].map((m) => m[1])
+    for (const target of targets) {
+      if (/^(https?:|mailto:|#)/i.test(target)) continue
+      const path = decodeURI(target.split('#')[0].split('?')[0])
+      if (path && !tree.has(path)) out.push(viol('R2', file, undefined, `link:${target}`, `${file} points to "${target}", which does not exist in the repository.`, 'Fix the path (GitHub paths are case-sensitive) or restore the file.'))
+    }
+  }
+  return out
+}
+
 // R1: the README still contains the phrases the project's features and settings depend on.
 export function checkReadme(tree, rules) {
   const P = rules.paths

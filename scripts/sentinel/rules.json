@@ -39,6 +39,7 @@
       "claude plugin marketplace add timsamoff/Claude-Redline",
       "claude plugin install redline@timsamoff-tools",
       "claude --plugin-dir ./claude-redline",
+      "prod/claude-redline-icon-512.png",
       "2.1.299",
       "Pro and Max",
       "MIT"

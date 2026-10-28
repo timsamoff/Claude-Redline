@@ -30,11 +30,12 @@ export function checkNotes(root) {
   const archive = join(dir, 'archive')
   const exists = (name) => existsSync(join(dir, name)) || existsSync(join(archive, name))
   const referenced = new Set()
+  const stillOpen = new Set(items.filter((it) => !it.done).flatMap((it) => it.text.match(BRIEF) || []))
   for (const it of items) {
     for (const name of it.text.match(BRIEF) || []) {
       referenced.add(name)
       if (!exists(name)) out.push(viol('T2', f, it.n, `missing:${name}`, `This item mentions ${name}, which does not exist.`, 'Fix the name or restore the file.'))
-      else if (it.done && existsSync(join(dir, name))) out.push(viol('T3', f, it.n, `done-not-archived:${name}`, `This item is done, but ${name} is not in archive/.`, 'Move the brief to Sentinel-Notes/archive/.'))
+      else if (it.done && existsSync(join(dir, name)) && !stillOpen.has(name)) out.push(viol('T3', f, it.n, `done-not-archived:${name}`, `This item is done and no open item uses ${name}, but it is not in archive/.`, 'Move the brief to Sentinel-Notes/archive/.'))
       else if (!it.done && !existsSync(join(dir, name))) out.push(viol('T4', f, it.n, `open-but-archived:${name}`, `This item is open, but ${name} is in archive/.`, 'Move the brief back, or mark the item done.'))
     }
   }

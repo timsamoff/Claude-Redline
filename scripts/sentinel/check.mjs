@@ -6,7 +6,7 @@ import * as git from './lib/git.mjs'
 import { loadJson, format, applyExceptions, applyBaseline } from './lib/report.mjs'
 import { checkMessage } from './lib/commit-message.mjs'
 import { evaluateGates } from './lib/signals.mjs'
-import { checkDefaults, checkBareNumbers, checkToasts, checkIds, checkIcon, checkReadme } from './lib/consistency.mjs'
+import { checkDefaults, checkBareNumbers, checkToasts, checkIds, checkIcon, checkReadme, checkDocStructure } from './lib/consistency.mjs'
 import { validateTree } from './lib/validator.mjs'
 import * as ext from './lib/extensions.mjs'
 import { checkNotes } from './lib/notes.mjs'
@@ -38,7 +38,7 @@ function init() {
 const under = (p, list) => list.some((w) => p === w || p.startsWith(w))
 
 function stateChecks(tree) {
-  return [...checkDefaults(tree, rules), ...checkBareNumbers(tree, rules), ...checkToasts(tree, rules), ...checkIds(tree, rules), ...checkIcon(tree, rules), ...checkReadme(tree, rules)]
+  return [...checkDefaults(tree, rules), ...checkBareNumbers(tree, rules), ...checkToasts(tree, rules), ...checkIds(tree, rules), ...checkIcon(tree, rules), ...checkReadme(tree, rules), ...checkDocStructure(tree, rules)]
 }
 
 function hygiene(changes) {
