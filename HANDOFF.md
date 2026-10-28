@@ -7,14 +7,12 @@ Redline is pushed (`01c297e`) and the tree is clean. The code review's findings 
 None pending. The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading, and `displayName` changes none of them (recorded in `CLAUDE.md`).
 
 ## Next step
-Check the three behaviors above live, then start TODO P1: test the marketplace install from a fresh clone. It is the one sharing path nobody has run, so it is the biggest risk before the project is shared widely.
+Tim does the open decisions that come before the install test: L1 (line endings), P5 (minimum version), P6 (GitHub description and topics), and F7 (icon colors versus the status line). Then P1, the marketplace install from a fresh clone. P7 (three live checks) can happen any time. `Sentinel-Notes/TODO.md` was swept this session: P2 and E1 closed, F7, G8 and E2 reworded, and P5 to P8, D5 and G9 added.
 
 ## Open questions
-- Keep "2.1.299" as the minimum version in the README? It is unverified.
-- `version` is now omitted; pin 1.0.0 at the first real release.
-- Repo visibility, and directory submission prep (copy the PNG into the plugin folder).
-- Custom levels now differ from `statusline.sh` cutoffs (TODO F7).
-- The folder rename to Claude-Redline goes last (`scratch/rename-project.ps1`).
+- The repo is public. Whether to submit to Anthropic's directory is TODO D5.
+- Icon colors (59 and 89) differ from the status line colors (70 and 95), TODO F7.
+- The folder rename goes last, TODO P8.
 
 ## Tried and failed
 - Newlines in a toast are not rendered, so each window is its own toast.
