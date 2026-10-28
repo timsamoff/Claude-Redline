@@ -1,6 +1,6 @@
 # Handoff: Claude-Redline
 
-Updated 2026-10-28, after the Sentinel integration audit. Last pushed commit: f7b4bb0. The edits to `CLAUDE.md`, `.gitignore` and this file made during the integration audit are not committed yet.
+Updated 2026-10-28, after the Sentinel integration audit. Last pushed commit: 86be4bf (plus this handoff update). Everything is committed and pushed.
 
 ## 1. Current task and status
 The audit is finished and its code fixes are applied. `register.js` now has one set of duration constants, named threshold constants (`NOTICE_AT`, `RESET_TIME_AT`, `ALERT_AT`), a shared `readWindow` helper, and `segment()` and `failureText()` helpers that join icon, label and percent with non-breaking spaces. A 63-run fake-data harness showed identical toast text, timeouts and written files before and after, apart from the intended non-breaking spaces. `claude plugin validate` passes.
@@ -28,7 +28,7 @@ Sentinel progress: prompts 00 (discovery), 01 (design and code quality audit) an
 4. Optional: rename the project folder to `Claude-Redline` with `scratch/rename-project.ps1` (local, git-ignored). It runs as a dry run by default. Use `-Apply` from a PowerShell window outside the folder, after closing VS Code and any Claude session for it. It renames the folder, copies Claude's history folder to the new name, and updates the plugin path in `~/.claude/settings.json`. Only the dry run has been tested.
 5. After a restart, check whether `displayName` ("Claude Redline", added to `plugin.json`) changes the "redline plugin" label on toasts. Unverified.
 6. Next audit prompt: `Sentinel-Prompts/03-gate-check-implementation.md`. It builds the checks in `INTEGRATION_CHECKLIST.md`. Decisions it must confirm with Tim: where the hook source lives, the commit-message caps (proposed 72 and 4), and how often to run the validator.
-7. Commit the integration-audit edits to `CLAUDE.md`, `.gitignore` and `HANDOFF.md` (Tim's yes first).
+7. Done: the integration-audit edits to `CLAUDE.md` and `.gitignore` were committed and pushed as `86be4bf`.
 
 ## 4. Open questions for Tim
 - Whether `.gitignore` should skip Illustrator temp files (one appeared in `prod/` earlier).
