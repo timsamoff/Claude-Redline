@@ -2,64 +2,104 @@
 
 # Claude-Redline
 
-A Claude Code plugin that writes `~/.claude/usage.json` and shows usage-limit toasts in VS Code sessions, where the status line never runs.
+Claude-Redline is a small Claude Code plugin that keeps your usage data up to date and shows usage-limit notifications while you're working in VS Code.
 
-The Claude Code status line can write your current 5-hour and 7-day usage to a file, but the VS Code extension does not run a status line, so that file goes stale there. Claude-Redline is a small plugin mod that reads the same usage figures inside VS Code, keeps the file current in the same format, and pops up a toast when a limit window crosses 70, 90 or 95 percent.
+Normally, the Claude Code status line can write your current 5-hour and 7-day usage to `~/.claude/usage.json`. The problem is that the VS Code extension doesn't run a status line, so that file stops updating when you're working there.
 
-Rate-limit figures exist only for claude.ai Pro and Max subscriptions. On other sign-ins the plugin has nothing to report.
+Redline fills that gap.
 
-## What it does and what it touches
+It reads the same usage data from Claude Code, writes it to `~/.claude/usage.json` in the same format, and shows a toast when either usage window crosses 70%, 90%, or 95%.
 
-A mod runs inside Claude Code with your permissions, so here is exactly what this one does. It listens for two events (`session.measure` and `turn.complete`), and when the session is drawing in VS Code it:
+> **Note:** Rate-limit data is only available with claude.ai Pro and Max subscriptions. If Claude Code doesn't provide usage data for your account, Redline has nothing to report.
 
-- reads the rate-limit windows and context fill Claude Code already has,
-- reads the `HOME` or `USERPROFILE` environment variable to find your home folder,
-- writes `~/.claude/usage.json`, and
-- shows toasts.
+## What it does
 
-It makes no network calls and starts no processes. This is the output of `claude plugin validate ./claude-redline`:
+Redline listens for two Claude Code events:
 
-```
+- `session.measure`
+- `turn.complete`
+
+When the current session is running in VS Code, it:
+
+- Reads the 5-hour and 7-day usage windows
+- Reads the current context fill
+- Finds your home folder using `HOME` or `USERPROFILE`
+- Writes the data to `~/.claude/usage.json`
+- Shows notifications when you approach a usage limit
+
+That's it.
+
+Redline doesn't make network requests or start any processes.
+
+You can verify what the plugin accesses yourself:
+
+```text
 ./register.js hooks: session.measure, turn.complete
 ./register.js calls: $.env.get (via homeDir), $.fs.write (via writeUsage), $.session.surfaces (via handle), $.session.usage, $.ui.log, $.ui.toast (via demo, handle, notify)
 ./register.js env writes: nothing
 ./register.js env reads: HOME, USERPROFILE
 ```
 
-The whole mod is one file, [register.js](claude-redline/hooks/register.js), so you can read it before you install it. [DESIGN.md](DESIGN.md) explains how it works.
+The entire plugin is contained in [`register.js`](claude-redline/hooks/register.js), so you can read the whole thing before installing it.
+
+See [`DESIGN.md`](DESIGN.md) for more about how it works.
 
 ## Install
 
-You need Claude Code and the VS Code extension at version 2.1.299 or later, because mods draw in the VS Code panel from that version.
+Redline requires Claude Code and the VS Code extension version **2.1.299 or later**. That's when mods gained the ability to draw in the VS Code panel.
 
-From the Claude Code marketplace flow:
+Install it through the Claude Code marketplace:
 
-```
+```bash
 claude plugin marketplace add timsamoff/Claude-Redline
 claude plugin install redline@timsamoff-tools
 ```
 
-Or load a clone of this repo for one session:
+Or clone the repository and load the plugin for a single session:
 
-```
+```bash
 claude --plugin-dir ./claude-redline
 ```
 
-## What you see
+## Notifications
 
-A toast appears the first time a window crosses each level: 70 percent (notice), 90 percent (also shows the reset time) and 95 percent (alert, which stays longer). It also appears when a window resets, and once if the file cannot be written. Each toast covers both windows, for example "yellow circle 5h 72% | green circle 7d 32%". The host adds a "redline plugin" label in front of the text, and the plugin cannot change that.
+Redline shows a notification the first time either usage window crosses:
+
+- **70%**: Notice
+- **90%**: Warning, including the reset time
+- **95%**: Alert that stays on screen longer
+
+It also notifies you when a usage window resets and once if `usage.json` can't be written.
+
+Each notification shows both usage windows, even if only one triggered it. For example:
+
+```text
+🟡 5h 72% | 🟢 7d 32%
+```
+
+Claude Code automatically adds a `redline plugin` label in front of the notification. Plugins currently can't change that.
 
 ## Settings
 
-Change these in `/plugin` and restart Claude Code for them to take effect.
+Settings can be changed through `/plugin`.
+
+Restart Claude Code after changing them.
 
 | Setting | Default | Range | What it does |
-|---|---|---|---|
-| Toast duration (seconds) | 6 | 1 to 120 | How long notice toasts stay |
-| Alert toast duration (seconds) | 10 | 1 to 120 | How long 95 percent and write-failure toasts stay |
-| Preview sample toasts | Off | Off or On | On shows one sample of each toast style on the first turn after a restart |
+| --- | --- | --- | --- |
+| Toast duration (seconds) | 6 | 1–120 | How long regular notifications stay on screen |
+| Alert toast duration (seconds) | 10 | 1–120 | How long 95% and write-failure alerts stay on screen |
+| Preview sample toasts | Off | Off / On | Shows one example of each notification style on the first turn after restarting |
 
-## The usage.json format
+## `usage.json`
+
+Redline writes usage data to:
+
+```text
+~/.claude/usage.json
+```
+
+The file looks like this:
 
 ```json
 {
@@ -72,19 +112,33 @@ Change these in `/plugin` and restart Claude Code for them to take effect.
 }
 ```
 
-Percents and `updated_at` are numbers. The `*_resets_at` values are epoch seconds as strings. A missing window is `null` and an empty string, and if both windows are missing nothing is written. The format mirrors the file written by the author's own terminal status line script, so anything that reads one reads the other.
+`five_hour_pct`, `seven_day_pct`, `context_pct`, and `updated_at` are numbers.
 
-## Limits
+The `*_resets_at` values are epoch seconds stored as strings.
 
-- It writes only when the session is drawing in VS Code, so it does not compete with a terminal status line.
-- The write replaces the file in place and is not atomic, so a reader could in principle catch it half written.
-- Only the 5-hour and 7-day windows are used. Other limit types are ignored.
-- The Claude desktop app is not supported yet.
+If one usage window isn't available, its percentage is `null` and its reset value is an empty string. If neither window is available, Redline doesn't write the file.
 
-## Status
+The format matches the file written by my terminal status line script, so anything that reads one can read the other.
 
-Early, version 0.0.1. Verified in live VS Code sessions on Claude Code 2.1.301: the plugin loads, both windows arrive, the file is written and keeps updating, and toasts appear with their icons. The threshold and reset logic has been tested with fake data, and a real threshold crossing has not been seen yet. Installing through the marketplace has not been tested yet.
+## A few limitations
+
+- Redline only writes usage data when Claude Code is running in VS Code. This keeps it from competing with a terminal status line.
+- The file is replaced in place rather than written atomically, so it's technically possible for another process to read it in the middle of a write.
+- Only the 5-hour and 7-day usage windows are tracked. Other limit types are ignored.
+- The Claude desktop app isn't supported yet.
+
+## Current status
+
+Redline is early. The current version is **0.0.1**.
+
+I've verified it in live VS Code sessions with Claude Code 2.1.301. The plugin loads, both usage windows come through, `usage.json` is written and continues updating, and the notifications appear with the correct icons.
+
+I've also tested the threshold and reset behavior using fake data.
+
+A real usage window crossing one of the thresholds hasn't been observed yet, and marketplace installation hasn't been tested yet.
+
+If you run into something, open an issue.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [`LICENSE`](LICENSE).
