@@ -15,9 +15,20 @@ const WARN = '\u26A0\uFE0F'
 const state = { five_hour: null, seven_day: null }
 let writeFailed = false
 
-// TEMPORARY: previews each toast style once, on the first turn after a reload.
-// Set DEMO to false (or delete this block and its call) when done.
-const DEMO = false
+// Toast durations in ms. Replaced from userConfig in register().
+let normalMs = 6000
+let alertMs = 10000
+
+function secondsToMs(value, fallbackMs) {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n <= 0) return fallbackMs
+  return Math.min(Math.max(n, 1), 120) * 1000
+}
+
+// Preview: when the previewToasts option is on, shows each toast style once on the
+// first turn after a restart, so the look and timing can be checked without waiting
+// for a real threshold. Set from userConfig in register().
+let demoOn = false
 let demoShown = false
 
 function icon(pct) {
@@ -76,7 +87,7 @@ async function writeUsage($, usage) {
 function notify($, rateLimits) {
   const segments = []
   let show = false
-  let longest = 6000
+  let longest = normalMs
 
   for (const [kind, label] of WINDOWS) {
     const w = rateLimits.find((r) => r.kind === kind)
@@ -98,7 +109,7 @@ function notify($, rateLimits) {
       fired = level
       show = true
       if (level >= 90 && Number.isFinite(ms)) note += ' resets ' + resetTime(ms)
-      if (level >= 95) longest = 10000
+      if (level >= 95) longest = alertMs
     }
 
     state[kind] = { ms, fired }
@@ -110,12 +121,12 @@ function notify($, rateLimits) {
 
 function demo($) {
   const samples = [
-    [GREEN + ' 5h 41% | ' + GREEN + ' 7d 32%', 15000],
-    [YELLOW + ' 5h 72% | ' + GREEN + ' 7d 32%', 15000],
-    [YELLOW + ' 5h 91% resets ' + resetTime(Date.now() + 3600000) + ' | ' + GREEN + ' 7d 32%', 15000],
-    [RED + ' 5h 96% resets ' + resetTime(Date.now() + 3600000) + ' | ' + GREEN + ' 7d 32%', 15000],
-    [GREEN + ' 5h 3% (window reset) | ' + GREEN + ' 7d 32%', 15000],
-    [WARN + ' usage.json write failed: Error: EACCES', 15000],
+    [GREEN + ' 5h 41% | ' + GREEN + ' 7d 32%', normalMs],
+    [YELLOW + ' 5h 72% | ' + GREEN + ' 7d 32%', normalMs],
+    [YELLOW + ' 5h 91% resets ' + resetTime(Date.now() + 3600000) + ' | ' + GREEN + ' 7d 32%', normalMs],
+    [RED + ' 5h 96% resets ' + resetTime(Date.now() + 3600000) + ' | ' + GREEN + ' 7d 32%', alertMs],
+    [GREEN + ' 5h 3% (window reset) | ' + GREEN + ' 7d 32%', normalMs],
+    [WARN + ' usage.json write failed: Error: EACCES', alertMs],
   ]
   for (const [text, ms] of samples) $.ui.toast('DEMO ' + text, { timeoutMs: ms })
 }
@@ -135,7 +146,7 @@ async function handle($, usage, label) {
     $.ui.log('redline[' + label + '] write failed: ' + String(err), { to: 'debug' })
     if (!writeFailed) {
       writeFailed = true
-      $.ui.toast(WARN + ' usage.json write failed: ' + String(err), { timeoutMs: 10000 })
+      $.ui.toast(WARN + ' usage.json write failed: ' + String(err), { timeoutMs: alertMs })
     }
   }
 
@@ -146,7 +157,11 @@ async function handle($, usage, label) {
   }
 }
 
-export function register(on) {
+export function register(on, options) {
+  normalMs = secondsToMs(options && options.toastSeconds, 6000)
+  alertMs = secondsToMs(options && options.alertToastSeconds, 10000)
+  demoOn = options != null && ['on', 'true'].includes(String(options.previewToasts).toLowerCase())
+
   on('session.measure', async ($, e, next) => {
     try {
       await handle($, e, 'measure:' + e.changed.join(','))
@@ -158,7 +173,7 @@ export function register(on) {
 
   on('turn.complete', async ($, e, next) => {
     try {
-      if (DEMO && !demoShown) {
+      if (demoOn && !demoShown) {
         demoShown = true
         demo($)
       }
