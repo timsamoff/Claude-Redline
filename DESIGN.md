@@ -22,7 +22,7 @@ Claude Code also generates `claude-redline/.claude-plugin/types/` and `claude-re
 
 The hooks module registers four handlers:
 - `session.start`: registers the `/redline` command with `$.command.register`.
-- `command.run` for `redline`: returns the current 5-hour and 7-day usage and reset times as the command's text. It reads the figures with `$.session.usage()` and writes nothing.
+- `command.run` for `redline`: shows the current 5-hour and 7-day usage and reset times in a toast and returns no chat text. It reads the figures with `$.session.usage()` and writes nothing.
 - `session.measure`: fires after each turn and when a usage figure changes (context, cost or a rate-limit window).
 - `turn.complete`: fires when a turn ends. This hook reads the figures itself with `$.session.usage()`.
 
@@ -51,13 +51,13 @@ The file is written to `<home>/.claude/usage.json`, where `<home>` is `HOME`, or
 
 ## Toasts
 
-Each reading produces at most one toast, covering both windows, in the form `icon 5h 72% | icon 7d 32%`. A toast appears only when something new happened:
-- **Threshold crossing.** The default levels are 70, 90 and 95, and the `levels` option replaces them. Each is announced once per window per reset cycle. If a reading crosses several at once, only the highest is announced. The highest level is the alert level.
-- **Reset time.** Every announced level adds `resets <local time>` to that window's text, with the weekday when the reset is more than a day away.
+Each reading shows a window as `icon 5h: 72%`, with `- resets at <time>` after it when its reset is known. Each window is its own toast, 5-hour first, because a toast does not render a line break and a wrapped single line can split an icon from its label. The `showFiveHour` and `showSevenDay` options turn a window's toasts off; `usage.json` is still written. Toasts appear only when something new happened:
+- **Threshold crossing.** The default levels are 70 and 90, and the `levels` option (up to 5 values) replaces them. 95 is always a level on top of those, and it is the alert level. Each is announced once per window per reset cycle. If a reading crosses several at once, only the highest is announced.
+- **Reset time.** Every announced level adds `- resets at <time>` to that window's text, with the weekday name before "at" when the reset is more than a day away. The time follows the `timeFormat` option.
 - **Window reset.** When a window reports a later reset time than before, its text gets `(window reset)` and its levels are armed again.
 - **Write failure.** One toast per failure streak, `usage.json write failed: <error>`.
 
-The icon follows the percentage: a red circle at the highest level or more, a yellow circle at the lowest level or more, otherwise a green circle. The failure toast uses a warning sign. Each window's icon, label and percentage are joined with non-breaking spaces so a wrapped toast does not split them.
+The icon follows the percentage and is fixed, not tied to the `levels` option: a red circle from 89 percent, a yellow circle from 59 percent, otherwise a green circle. The failure toast uses a warning sign. Each window's icon, label and percentage are joined with non-breaking spaces so a wrapped toast does not split them.
 
 Notice-level toasts last 6 seconds by default and alert-level toasts (95 percent and write failures) last 10. The host adds a "redline plugin" label before the text. The mod cannot change that label.
 
@@ -71,10 +71,12 @@ Options are declared in `plugin.json` under `userConfig` and reach the mod as th
 |---|---|---|---|
 | `toastSeconds` | 6 | 1 to 120 | Duration of notice-level toasts |
 | `alertToastSeconds` | 10 | 1 to 120 | Duration of alert-level and failure toasts |
-| `levels` | 70, 90, 95 | 1 to 100, up to 5 values | Percentages that trigger a toast. Invalid input falls back to the default |
-| `previewToasts` | Off | Off or On | When On, shows one sample of each toast style, labeled DEMO, on the first turn after a restart |
+| `levels` | 70, 90 | 1 to 100, up to 5 values | Percentages that trigger a toast, in addition to the fixed 95. Invalid input falls back to the default |
+| `showFiveHour` | On | On or Off | Whether the 5-hour window gets toasts, including in `/redline` |
+| `showSevenDay` | On | On or Off | Whether the 7-day window gets toasts, including in `/redline` |
+| `timeFormat` | System | System, 12-hour, 24-hour or UTC | How reset times read. System follows the computer's locale, 12-hour and 24-hour use the local time zone, and UTC shows 24-hour UTC. A reset more than a day away also names the weekday |
 
-The defaults and range exist in both `plugin.json` and `register.js` and must match. A change to an option takes effect after Claude Code restarts. The `options` field on `previewToasts` makes the plugin require Claude Code v2.1.271 or later, according to the plugin docs.
+The defaults and range exist in both `plugin.json` and `register.js` and must match. A change to an option takes effect after Claude Code restarts. The `options` field on the On/Off and format options makes the plugin require Claude Code v2.1.271 or later, according to the plugin docs.
 
 ## Constraints of the mod runtime
 

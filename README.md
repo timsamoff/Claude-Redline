@@ -47,13 +47,16 @@ claude --plugin-dir ./claude-redline
 
 Redline works automatically once installed.
 
-By default, it notifies you the first time either usage window crosses 70%, 90%, or 95%. Each notification shows when the window resets, and the highest level (95% by default) stays on screen longer.
+By default, it notifies you the first time either usage window crosses 70% or 90%. It always notifies you at 95%, whatever levels you choose, and that alert stays on screen longer. Each notification shows when the window resets.
 
-Each notification shows both usage windows:
+Each notification shows both usage windows, as two toasts, one per window. The icon is green below 59%, yellow from 59%, and red from 89%, whatever levels you choose:
 
 ```text
-🟡 5h 72% | 🟢 7d 32%
+🟡 5h: 72% - resets at 2:20 PM
+🟢 7d: 32% - resets Thursday at 3:00 PM
 ```
+
+You can turn either window's toasts off in the settings. `usage.json` is still kept current, and `/redline` shows only the windows that are on.
 
 Redline also notifies you when a usage window resets and once if `usage.json` can't be written.
 
@@ -63,7 +66,7 @@ To check your usage without waiting for a notification, use:
 /redline
 ```
 
-This shows your current 5-hour and 7-day usage and their reset times.
+This shows your current 5-hour and 7-day usage and their reset times in a notification, not in the chat.
 
 ## Settings
 
@@ -71,10 +74,12 @@ Change Redline's settings through `/plugin` and restart Claude Code for them to 
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| Toast levels (percent) | 70, 90, 95 | Usage percentages that trigger a notification. Separate them with commas, use 1 to 100, and give up to five. The highest is the alert level. Invalid input falls back to the default |
+| Toast levels (percent) | 70, 90 | Usage percentages that trigger a notification. Separate them with commas, use 1 to 100, and give up to five. A notification at 95% always appears as well, so you don't need to list it. Invalid input falls back to the default |
 | Toast duration (seconds) | 6 | How long regular notifications stay on screen |
-| Alert toast duration (seconds) | 10 | How long highest-level and write-failure notifications stay on screen |
-| Preview sample toasts | Off | Shows one sample of each notification style after restarting |
+| Alert toast duration (seconds) | 10 | How long 95% and write-failure notifications stay on screen |
+| Show 5-hour toasts | On | Turn the 5-hour window's toast on or off |
+| Show 7-day toasts | On | Turn the 7-day window's toast on or off |
+| Time format | System | How reset times are shown: System (your computer's setting), 12-hour, 24-hour (both in your local time zone) or UTC |
 
 The defaults are intended to work without any configuration. Change them only if you want Redline to get your attention earlier or later.
 
@@ -100,7 +105,7 @@ claude plugin validate ./claude-redline
 ```text
 ./register.js hooks: session.start, command.run{command=redline}, session.measure, turn.complete
 ./register.js answers its own command: command.run{command=redline}
-./register.js calls: $.command.register, $.env.get (via homeDir), $.fs.write (via writeUsage), $.session.surfaces (via handle), $.session.usage, $.ui.log, $.ui.toast (via demo, handle, notify)
+./register.js calls: $.command.register, $.env.get (via homeDir), $.fs.write (via writeUsage), $.session.surfaces (via handle), $.session.usage, $.ui.log, $.ui.toast (via handle, toastEach)
 ./register.js env writes: nothing
 ./register.js env reads: HOME, USERPROFILE
 ```

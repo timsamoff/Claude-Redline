@@ -107,7 +107,7 @@ reset()
 const REG = 'claude-redline/hooks/register.js'
 const PJ = 'claude-redline/.claude-plugin/plugin.json'
 
-sub(REG, "const SEPARATOR = ' | '\n", "const SEPARATOR = ' | '\nconst EXTRA = 5\n")
+sub(REG, "const HOUR_MS = 3600000\n", "const HOUR_MS = 3600000\nconst EXTRA = 5\n")
 git(['add', REG])
 blocked('G1: new constant without CLAUDE.md is blocked', commit(), '[G1]', 'named constants')
 w('CLAUDE.md', r('CLAUDE.md') + '\nNote: EXTRA is a new constant.\n')
@@ -148,9 +148,9 @@ git(['add', REG])
 blocked('K2: bare 120 outside the constants', commit(), '[K2]', 'MAX_SECONDS')
 reset()
 
-sub(REG, "segment(high, '5h', soon)", "segment(95, '5h', soon)")
+sub(REG, 'if (level >= ALERT_AT) longest = alertMs', 'if (level >= 95) longest = alertMs')
 git(['add', REG])
-blocked('K2 adversarial: bare 95 inside the preview function is still caught', commit(), '[K2]', 'DEFAULT_LEVELS')
+blocked('K2 adversarial: bare 95 in the alert rule is still caught', commit(), '[K2]', 'ALERT_AT')
 reset()
 
 sub(REG, '$.ui.toast(failureText(err), { timeoutMs: alertMs })', "$.ui.toast('Write failed', { timeoutMs: alertMs })")
@@ -158,9 +158,9 @@ git(['add', REG])
 blocked('K3: a hand-typed toast is blocked', commit(), '[K3]')
 reset()
 
-sub(REG, '[failureText(new Error(\'EACCES\')), alertMs],', "['hand made sample', alertMs],")
+sub(REG, 'toastEach($, segments, longest)', "toastEach($, ['hand made'], longest)")
 git(['add', REG])
-blocked('K3: a hand-built preview sample is blocked', commit(), '[K3]')
+blocked('K3: a toastEach call with hand-typed texts is blocked', commit(), '[K3]')
 reset()
 
 sub(PJ, '"title": "Toast duration (seconds)",', '"title": "Toast duration (seconds)",\n      "bogus": true,')
@@ -219,7 +219,7 @@ blocked('R1: dropping a toast level from the README is blocked', commit(), '[R1]
 reset()
 
 // ---- 4. staged content, not the working tree ----
-sub(REG, "const SEPARATOR = ' | '\n", "const SEPARATOR = ' | '\nconst STAGED_ONE = 5\n")
+sub(REG, "const HOUR_MS = 3600000\n", "const HOUR_MS = 3600000\nconst STAGED_ONE = 5\n")
 w('CLAUDE.md', r('CLAUDE.md') + '\nNote: STAGED_ONE.\n')
 git(['add', REG, 'CLAUDE.md'])
 sub(REG, 'Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS)', 'Math.min(Math.max(n, 1), 120)')
@@ -285,7 +285,7 @@ blocked('an EXPIRED exception does not exempt, and is itself reported', commit()
 reset()
 
 sub(REG, 'Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS)', 'Math.min(Math.max(n, 1), 120)')
-sub(REG, "const SEPARATOR = ' | '\n", "const SEPARATOR = ' | '\n\n\n\n\n\n\n\n\n\n")
+sub(REG, "const HOUR_MS = 3600000\n", "const HOUR_MS = 3600000\n\n\n\n\n\n\n\n\n\n")
 exc('2999-01-01')
 git(['add', REG])
 passes('exception is keyed to content: shifting the line by 10 does not break it', commit())

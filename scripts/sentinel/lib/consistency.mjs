@@ -67,6 +67,9 @@ export function checkBareNumbers(tree, rules) {
   const lv = levelList(reg)
   if (lv == null) return [unable('K2', P.register, 'the constant DEFAULT_LEVELS was not found in register.js')]
   for (const x of lv) banned.set(x, 'DEFAULT_LEVELS')
+  const alertAt = num(reg, 'ALERT_AT')
+  if (alertAt == null) return [unable('K2', P.register, 'the constant ALERT_AT was not found in register.js')]
+  banned.set(alertAt, 'ALERT_AT')
   const mx = num(reg, 'MAX_SECONDS')
   if (mx == null) return [unable('K2', P.register, 'the constant MAX_SECONDS was not found in register.js')]
   banned.set(mx, 'MAX_SECONDS')
@@ -115,8 +118,18 @@ export function checkToasts(tree, rules) {
   const call = '$.ui.toast('
   for (let idx = code.indexOf(call); idx !== -1; idx = code.indexOf(call, idx + call.length)) {
     const arg = firstArg(code, idx + call.length).trim()
-    if (!/^(segments\.join\(|failureText\(|'DEMO ' \+ text$)/.test(arg)) {
+    if (!/^(segments\.join\(|failureText\(|text$|'DEMO ' \+ text$)/.test(arg)) {
       out.push(viol('K3', P.register, code.slice(0, idx).split('\n').length, `toast:${arg}`, `This toast takes its text from "${arg}", not from segment() or failureText().`, 'Build toast text only through segment() and failureText().'))
+    }
+  }
+  const each = 'toastEach('
+  const NL = String.fromCharCode(10)
+  for (let idx = code.indexOf(each); idx !== -1; idx = code.indexOf(each, idx + each.length)) {
+    if (code.slice(idx - 9, idx) === 'function ') continue
+    const first = firstArg(code, idx + each.length)
+    const texts = firstArg(code, idx + each.length + first.length + 1).trim()
+    if (!/^(segments$|summary[(])/.test(texts)) {
+      out.push(viol('K3', P.register, code.slice(0, idx).split(NL).length, `each:${texts}`, `A toastEach call takes its texts from "${texts}", not from segments or summary().`, 'Build toast text only through segment(), summary() and failureText().'))
     }
   }
   const demo = (code.match(/function demo\([^)]*\) \{[\s\S]*?\n\}/) || [])[0]
@@ -219,7 +232,9 @@ export function checkReadme(tree, rules) {
   if (reg == null) return [...out, unable('R1', P.register, `${P.register} is missing`)]
   const lv = levelList(reg)
   if (lv == null) out.push(unable('R1', P.register, 'the constant DEFAULT_LEVELS was not found in register.js'))
-  for (const x of lv || []) {
+  const alertAt = num(reg, 'ALERT_AT')
+  if (alertAt == null) out.push(unable('R1', P.register, 'the constant ALERT_AT was not found in register.js'))
+  for (const x of [...(lv || []), ...(alertAt == null ? [] : [alertAt])]) {
     if (!new RegExp(`(?<!\d)${x}\s?(%|percent)`).test(readme)) out.push(viol('R1', P.readme, undefined, `level:${x}`, `The README does not mention the ${x} percent level (DEFAULT_LEVELS).`, `Document the ${x} percent level, written as "${x}%" or "${x} percent".`))
   }
   for (const k of registerSignals(reg).bodyKeys) need(k, 'a usage.json key from register.js')

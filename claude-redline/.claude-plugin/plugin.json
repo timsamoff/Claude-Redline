@@ -3,7 +3,9 @@
   "displayName": "Claude Redline",
   "version": "0.0.1",
   "description": "A Claude Code plugin that writes ~/.claude/usage.json and shows usage-limit toasts in VS Code sessions, where the status line never runs.",
-  "author": { "name": "Tim Samoff" },
+  "author": {
+    "name": "Tim Samoff"
+  },
   "homepage": "https://github.com/timsamoff/Claude-Redline",
   "repository": "https://github.com/timsamoff/Claude-Redline",
   "license": "MIT",
@@ -19,7 +21,7 @@
     "alertToastSeconds": {
       "type": "number",
       "title": "Alert toast duration (seconds)",
-      "description": "How long the highest-level and write-failure toasts stay on screen. Default 10.",
+      "description": "How long the 95 percent and write-failure toasts stay on screen. Default 10.",
       "default": 10,
       "min": 1,
       "max": 120
@@ -27,15 +29,40 @@
     "levels": {
       "type": "string",
       "title": "Toast levels (percent)",
-      "description": "Usage percentages that trigger a toast, separated by commas. Up to 5, from 1 to 100. The highest is the alert level. Default 70, 90, 95.",
-      "default": "70, 90, 95"
+      "description": "Usage percentages that trigger a toast, separated by commas: up to 5 values, from 1 to 100. A toast at 95 percent always appears as well, so there is no need to list it. Default 70, 90.",
+      "default": "70, 90"
     },
-    "previewToasts": {
+    "showFiveHour": {
       "type": "string",
-      "title": "Preview sample toasts",
-      "description": "On shows one sample of each toast style on the first turn after Claude Code restarts. For checking how toasts look and how long they last. Default Off.",
-      "options": ["Off", "On"],
-      "default": "Off"
+      "title": "Show 5-hour toasts",
+      "description": "On shows a toast for the 5-hour window. Off hides it. Default On.",
+      "options": [
+        "On",
+        "Off"
+      ],
+      "default": "On"
+    },
+    "showSevenDay": {
+      "type": "string",
+      "title": "Show 7-day toasts",
+      "description": "On shows a toast for the 7-day window. Off hides it. Default On.",
+      "options": [
+        "On",
+        "Off"
+      ],
+      "default": "On"
+    },
+    "timeFormat": {
+      "type": "string",
+      "title": "Time format",
+      "description": "How reset times are shown. System follows your computer's settings. 12-hour and 24-hour use your local time zone. UTC shows 24-hour UTC. Default System.",
+      "options": [
+        "System",
+        "12-hour",
+        "24-hour",
+        "UTC"
+      ],
+      "default": "System"
     }
   }
 }

@@ -94,7 +94,7 @@ export function gateReasons({ before, after, changes, rules }) {
   const consts = constantChanges(rb, ra)
   if (consts.length) {
     push(claude, `named constants (${consts.join(', ')})`, P.register, `const ${consts[0]} `)
-    if (consts.some((n) => /^DEFAULT_LEVELS$/.test(n))) push(readme, 'the toast levels', P.register, `const ${consts.find((n) => /^DEFAULT_LEVELS$/.test(n))} `)
+    if (consts.some((n) => /^(DEFAULT_LEVELS|ALERT_AT)$/.test(n))) push(readme, 'the toast levels', P.register, `const ${consts.find((n) => /^(DEFAULT_LEVELS|ALERT_AT)$/.test(n))} `)
     if (consts.some((n) => /^(GREEN|YELLOW|RED|WARN|NBSP|SEPARATOR)$/.test(n))) push(readme, 'the toast text or icons', P.register, `const ${consts.find((n) => /^(GREEN|YELLOW|RED|WARN|NBSP|SEPARATOR)$/.test(n))} `)
   }
   if (rb.helpers !== ra.helpers && rb.present && ra.present) push(readme, 'the toast text helpers', P.register, 'function segment')

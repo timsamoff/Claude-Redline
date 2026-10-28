@@ -3,7 +3,7 @@
 Claude Code plugin mod that writes `~/.claude/usage.json` in VS Code sessions, where the status line never runs, and shows usage-limit toasts. `DESIGN.md` explains how it works. `HANDOFF.md` holds the current unfinished state.
 
 ## Status
-Working and pushed. In live VS Code sessions the mod loads, reads both rate-limit windows, writes `usage.json` in the status line's format, and shows toasts. Not yet verified live: a real 70, 90 or 95 percent toast, a window-reset toast, the non-breaking-space wrap fix, and the Off/On picker for `previewToasts`. Shareable through a GitHub marketplace once pushed: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` exist and validate. Still missing for Anthropic's directory: a PNG icon and the manifest's `author`, `homepage` and `repository`. A marketplace install has not been tested.
+Working and pushed. In live VS Code sessions the mod loads, reads both rate-limit windows, writes `usage.json` in the status line's format, and shows toasts. Not yet verified live: a real 70, 90 or 95 percent toast, a window-reset toast, the non-breaking-space wrap fix, and the On/Off pickers for the window toasts. Shareable through a GitHub marketplace once pushed: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` exist and validate. Still missing for Anthropic's directory: a PNG icon and the manifest's `author`, `homepage` and `repository`. A marketplace install has not been tested.
 
 Tim tests changes himself. Do not claim a change works in VS Code until he reports what he saw.
 
@@ -42,10 +42,11 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 - Do not change `~/.claude/hooks/usage-check.sh` or `~/.claude/statusline.sh`. Claude-Redline matches their format.
 - `usage-check.sh` treats a file older than 900 seconds as stale, so write on `turn.complete` as well as `session.measure`.
 - `$.fs.write` is not atomic. Write only when `$.session.surfaces()` includes `vscode`, so Claude-Redline never races the terminal status line.
-- Toast levels default to the constant `DEFAULT_LEVELS` (70, 90, 95) and can be replaced by the `levels` option. Each is announced once per window per reset cycle, and the highest is the alert level. Do not write a level or duration as a bare number elsewhere.
-- The `/redline` command registers on `session.start` and is served by `command.run`. It only reads and returns text.
-- The `userConfig` defaults and limits in `plugin.json` must equal the constants in `register.js` (`DEFAULT_LEVELS` as the string "70, 90, 95", and the duration constants). JSON cannot import them, so check both when changing either.
-- Build toast text only through `segment()` and `failureText()`, so the preview samples cannot drift from the real format. Icon, label and percent are joined with non-breaking spaces.
+- Toast levels default to the constant `DEFAULT_LEVELS` (70, 90) and can be replaced by the `levels` option (up to 5). `ALERT_AT` (95) is always a level on top of those and gets the alert duration. Each is announced once per window per reset cycle. Do not write a level or duration as a bare number elsewhere.
+- Icon colors are fixed by `YELLOW_AT` (59) and `RED_AT` (89), independent of the `levels` setting. Each window gets its own toast (a toast does not render a newline), and `showFiveHour` and `showSevenDay` turn a window off. Reset times follow the `timeFormat` setting.
+- The `/redline` command registers on `session.start` and is served by `command.run`. It only reads, and shows the result in a toast (normal duration) instead of chat text.
+- The `userConfig` defaults and limits in `plugin.json` must equal the constants in `register.js` (`DEFAULT_LEVELS` as the string "70, 90", and the duration constants). JSON cannot import them, so check both when changing either.
+- Build toast text only through `segment()` and `failureText()`, so the toast text cannot drift from the real format. Icon, label and percent are joined with non-breaking spaces.
 - Functions that take `$` stay in `register.js`. The validator rejects passing `$` to a function imported from another file. Event names passed to `on` must be string literals.
 - Run `claude plugin validate ./claude-redline` after any change to the plugin folder.
 - Never read credential files or call undocumented usage endpoints without Tim's explicit say-so.
