@@ -40,7 +40,7 @@
       "claude plugin install redline@timsamoff-tools",
       "claude --plugin-dir ./claude-redline",
       "assets/claude-redline-icon-512.png",
-      "2.1.299",
+      "2.1.301",
       "Pro and Max",
       "MIT"
     ]

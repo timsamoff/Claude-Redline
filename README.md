@@ -24,7 +24,7 @@ No dashboard. No charts. No history. No transcript scanning. No OAuth token acce
 
 ## Install
 
-You need Claude Code and the VS Code extension at version 2.1.299 or later.
+You need Claude Code and the VS Code extension at version 2.1.301 or later. That is the oldest version Redline has been tested with.
 
 From the Claude Code marketplace:
 

@@ -7,11 +7,11 @@ Redline is pushed (`01c297e`) and the tree is clean. The code review's findings 
 None pending. The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading, and `displayName` changes none of them (recorded in `CLAUDE.md`).
 
 ## Next step
-Tim does the open decisions that come before the install test: L1 (line endings), P5 (minimum version), P6 (optional GitHub topics; the description is done), and F7 (icon colors versus the status line). Then P1, the marketplace install from a fresh clone. P7 (three live checks) can happen any time. `Sentinel-Notes/TODO.md` was swept this session: P2 and E1 closed, F7, G8 and E2 reworded, and P5 to P8, D5 and G9 added.
+Run P1, the marketplace install from a fresh clone, now that L1 (line endings) and P5 (minimum version) are settled. F7 (icon colors versus the status line) is left for later by Tim. P6 (GitHub topics) is optional and P7 (three live checks) can happen any time.
 
 ## Open questions
 - The repo is public. Whether to submit to Anthropic's directory is TODO D5.
-- Icon colors (59 and 89) differ from the status line colors (70 and 95), TODO F7.
+- Icon colors (59 and 89) differ from the status line colors (70 and 95), TODO F7. Tim will decide later.
 - The folder rename goes last, TODO P8.
 
 ## Tried and failed
