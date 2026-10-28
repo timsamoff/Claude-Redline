@@ -1,40 +1,26 @@
-# Handoff: Claude-Redline
+# Handoff
 
-Updated 2026-10-28, after finishing Sentinel prompt 03. Last pushed commit: 68325d9, plus the handoff commit that follows this edit. Uncommitted: Tim's own rewrite of `README.md`.
+## Current task and status
+Redline 0.0.1 is pushed (`8a0b565`). This session added the `levels` setting, the `/redline` command (shows toasts), a fixed 95 percent toast, fixed icon colors (green under 59, yellow from 59, red from 89), one toast per window with On/Off settings, a `timeFormat` setting, and the README icon in `assets/`. The Preview option was removed. Tests (15), the validator, the gate checks and the integration suite (113 scenarios) all pass. Nothing is verified live except that `/redline` runs.
 
-## 1. Current task and status
-All four Sentinel prompts are finished. The gate checks are live and pushed:
-- Git hooks (`commit-msg`, `pre-commit`, `pre-push`) in `.githooks/`, checks in `scripts/sentinel/`, and `core.hooksPath` set in this clone.
-- Verified by 87 real-commit scenarios in a throwaway clone and by fresh `claude -p` sessions for the session-start hook. The first full scan of the real tree found nothing, so `baseline.json` is empty.
-- A tracked `.claude/settings.json` SessionStart hook prints this file at the start of a session.
-- Commit and push autonomy: confirm every time. The one exception is this file, which may be committed and pushed alone at close-out.
+## Files touched
+- `claude-redline/hooks/register.js`: levels, ALERT_AT, YELLOW_AT and RED_AT, `/redline`, window toggles, time format.
+- `claude-redline/.claude-plugin/plugin.json`: options `levels`, `showFiveHour`, `showSevenDay`, `timeFormat`; `previewToasts` removed.
+- `tests/redline.test.mjs`: new, run with `node --test tests/redline.test.mjs`.
+- `scripts/sentinel/`: K1, K2, R1, K3 and signals updated for the new constants.
+- `README.md`, `DESIGN.md`, `CLAUDE.md`: updated to match. `assets/` holds the README icon.
 
-Still unverified in live VS Code: the toast wrap fix, a real threshold or reset toast, the Off/On picker, and a marketplace install from a fresh clone.
+## Next step
+Reload the VS Code window and check live: a real toast at 70, 90 or 95 percent, whether the 5h and 7d toasts stack in order, the `timeFormat` choices, the On/Off pickers, and whether the toast label reads "Redline" (the host may use the lowercase ID). Then work through `Sentinel-Notes/TODO.md`, starting with D4 (review the settings wording).
 
-## 2. Files touched
-- Committed in `85cbe05`: `.githooks/`, `scripts/sentinel/` (checks, rules, empty exceptions and baseline, the integration suite), `.claude/settings.json`, `.gitattributes`.
-- Committed in `68325d9`: `CLAUDE.md` (a "Gate checks" section, the autonomy choice, a `--notes` close-out step).
-- Local only: `Sentinel-Notes/TODO.md` (25 open, 14 done), `INTEGRATION_CHECKLIST.md` (implementation status added), `PROJECT_PROFILE.md`.
-- `README.md`: Tim's own uncommitted rewrite. Still not touched by this session.
+## Open questions
+- Keep "2.1.299" as the minimum version in the README? It is unverified.
+- `version`: omit it or pin 1.0.0 at release.
+- Repo visibility, and directory submission prep (copy the PNG into the plugin folder).
+- Custom levels now differ from `statusline.sh` cutoffs (TODO F7).
+- The folder rename to Claude-Redline goes last (`scratch/rename-project.ps1`).
 
-## 3. Next steps
-1. Get Tim's decision on the README (first open question below).
-2. Recommended next TODO item: P1, adding `author`, `homepage` and `repository` to `plugin.json`. It clears the validator's author warning and is needed for the directory. It was not started because prompt 03 says to wait for Tim's review of this run's backlog (T1, E3, G6, G8).
-3. Other open work: tests for `register.js` (F4), a copy of the icon inside the plugin folder, and a marketplace install test from a fresh clone.
-4. Tim will rename the folder last with `scratch/rename-project.ps1` (a dry run by default; `-Apply` from outside the folder, after closing VS Code). `core.hooksPath` is relative, so the hooks survive the rename.
-5. In any new clone, run `node scripts/sentinel/check.mjs --install`. Until then the clone has no enforcement. The hooks need Node on the committing machine.
-
-## 4. Open questions for Tim
-- His README edit starts and ends with a ```markdown fence (GitHub would show one code block), has lost the icon `<img>` line, links to `claude-redline/register.js` instead of `claude-redline/hooks/register.js`, and says "my terminal status line script". Fix these? None of the approved checks catch them.
-- Add a README integrity check (relative links resolve, fences balanced, icon line present)? Logged as TODO G6, not built.
-- Claude Code reports that two `Write(...)` allow rules in `~/.claude/settings.json` never match, because only `Edit(...)` rules apply to file writes. This may explain some auto-mode blocks (TODO E3). Fix them?
-- Whether to omit `version`, whether the preview option ships publicly, and the repo's visibility (not checked).
-
-## 5. Tried and failed, and facts learned
-- Hook shell scripts must keep LF line endings (`.gitattributes` enforces it). The executable bit must be committed with `git add --chmod=+x`; a `git reset` loses an index-only change.
-- A git hook finds `node` and `claude` with a normal PATH but not with a stripped one, so the shims search the standard Node path and the validator runner searches the usual `claude` locations. Both fail loudly if nothing is found.
-- `claude plugin validate --json` is the reliable way to read the validator. A marketplace entry whose name differs from the manifest name still passes the validator, which is why check K6 exists.
-- A broken `rules.json` once crashed with a raw stack trace. It now reports plainly and blocks.
-- Never use `--no-verify`. A commit that bypasses the hooks is caught later by the `pre-push` full scan.
-- The Edit and Write tools failed intermittently in earlier sessions ("classifier gave no verdict") and worked in this one. Ask Tim before using a PowerShell workaround.
-- The plugin ID cannot start with `claude-`, and a `CLAUDE.md` inside the plugin folder makes the validator warn.
+## Tried and failed
+- Newlines in a toast: not rendered, so the windows are separate toasts.
+- A non-breaking space between icon and label did not stop a bad wrap, and neither did removing the space. Two toasts replaced them.
+- The Edit and Write tools sometimes fail with "classifier gave no verdict". Node patch scripts in `scratch/` worked.
