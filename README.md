@@ -74,12 +74,12 @@ Change Redline's settings through `/plugin` and restart Claude Code for them to 
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| Toast levels (percent) | 70, 90 | Usage percentages that trigger a notification. Enter up to five values from 1 to 100, separated by commas. The 95% alert is always enabled and does not need to be listed. Invalid input uses the default. |
+| Toast levels (percent) | 70, 90 | Usage percentages that trigger a notification. Enter up to five values from 1 to 100, separated by commas (a % sign is fine). The 95% alert is always enabled and does not need to be listed. Invalid input uses the default. |
 | Toast duration (seconds) | 6 | How long regular notifications stay on screen |
-| Alert toast duration (seconds) | 10 | How long notifications at 95% and above, and write-failure notifications, stay on screen |
+| Alert toast duration (seconds) | 10 | How long 95%+ and write-failure notifications stay on screen |
 | Show 5-hour toasts | On | Turn the 5-hour window's toast on or off |
 | Show 7-day toasts | On | Turn the 7-day window's toast on or off |
-| Time format | System | How reset times are shown: System (your computer's setting), 12-hour, 24-hour (both in your local time zone), or UTC |
+| Time format | System | How reset times are shown: System (your computer's setting), 12-hour, 24-hour (both in your local time zone), or UTC (24-hour UTC) |
 
 The defaults work without any configuration, but you can adjust when and how Redline gets your attention.
 

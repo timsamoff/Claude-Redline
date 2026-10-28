@@ -12,7 +12,7 @@
     "toastSeconds": {
       "type": "number",
       "title": "Toast duration (seconds)",
-      "description": "How long usage toasts stay on screen. Default 6.",
+      "description": "How long usage toasts stay on screen.",
       "default": 6,
       "min": 1,
       "max": 120
@@ -20,7 +20,7 @@
     "alertToastSeconds": {
       "type": "number",
       "title": "Alert toast duration (seconds)",
-      "description": "How long toasts at 95 percent and above, and write-failure toasts, stay on screen. Default 10.",
+      "description": "How long 95%+ and write-failure toasts stay on screen.",
       "default": 10,
       "min": 1,
       "max": 120
@@ -28,13 +28,13 @@
     "levels": {
       "type": "string",
       "title": "Toast levels (percent)",
-      "description": "Usage percentages that trigger a toast, separated by commas: up to 5 values, from 1 to 100. A toast at 95 percent always appears as well, so there is no need to list it. Default 70, 90.",
+      "description": "Usage percentages that trigger a toast, separated by commas. Enter up to five values from 1 to 100. A 95% toast always appears, so you don't need to list it.",
       "default": "70, 90"
     },
     "showFiveHour": {
       "type": "string",
       "title": "Show 5-hour toasts",
-      "description": "On shows a toast for the 5-hour window. Off hides it. Default On.",
+      "description": "Show or hide toasts for the 5-hour window.",
       "options": [
         "On",
         "Off"
@@ -44,7 +44,7 @@
     "showSevenDay": {
       "type": "string",
       "title": "Show 7-day toasts",
-      "description": "On shows a toast for the 7-day window. Off hides it. Default On.",
+      "description": "Show or hide toasts for the 7-day window.",
       "options": [
         "On",
         "Off"
@@ -54,7 +54,7 @@
     "timeFormat": {
       "type": "string",
       "title": "Time format",
-      "description": "How reset times are shown. System follows your computer's settings. 12-hour and 24-hour use your local time zone. UTC shows 24-hour UTC. Default System.",
+      "description": "How reset times are shown. System follows your computer's settings. 12-hour and 24-hour use your local time zone. UTC uses 24-hour UTC.",
       "options": [
         "System",
         "12-hour",
