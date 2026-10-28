@@ -56,6 +56,10 @@ Each notification shows both usage windows, as two toasts, one per window. The i
 🟢 7d: 32% - resets Thursday at 3:00 PM
 ```
 
+<p align="center">
+  <img src="assets/cr-screenshot.png" alt="Two Redline toasts in VS Code, one for the 5-hour window and one for the 7-day window" width="349px">
+</p>
+
 You can turn either window's toasts off in the settings. `usage.json` is still kept current, and `/redline` shows only the windows that are on.
 
 Redline also notifies you when a usage window resets and once if `usage.json` can't be written.
