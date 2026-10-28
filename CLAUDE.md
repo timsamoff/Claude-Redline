@@ -3,7 +3,7 @@
 Claude Code plugin mod that writes `~/.claude/usage.json` in VS Code sessions, where the status line never runs, and shows usage-limit toasts. `DESIGN.md` explains how it works. `HANDOFF.md` holds the current unfinished state.
 
 ## Status
-Working and pushed. In live VS Code sessions the mod loads, reads both rate-limit windows, writes `usage.json` in the status line's format, and shows toasts. Verified live (2026-10-28, per Tim): real threshold toasts, `/redline`, the `timeFormat` choices and the On/Off pickers for the window toasts. Not yet verified live: a window-reset toast. Shareable through a GitHub marketplace once pushed: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` exist and validate. Still missing for Anthropic's directory: a PNG icon and the manifest's `author`, `homepage` and `repository`. A marketplace install has not been tested.
+Working and pushed. In live VS Code sessions the mod loads, reads both rate-limit windows, writes `usage.json` in the status line's format, and shows toasts. Verified live (2026-10-28, per Tim): real threshold toasts, a window-reset toast, `/redline`, the `timeFormat` choices and the On/Off pickers for the window toasts. Shareable through a GitHub marketplace once pushed: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` exist and validate. Still missing for Anthropic's directory: a PNG icon and the manifest's `author`, `homepage` and `repository`. A marketplace install has not been tested.
 
 Tim tests changes himself. Do not claim a change works in VS Code until he reports what he saw.
 
