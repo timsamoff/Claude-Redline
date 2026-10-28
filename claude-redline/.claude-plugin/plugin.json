@@ -3,6 +3,10 @@
   "displayName": "Claude Redline",
   "version": "0.0.1",
   "description": "A Claude Code plugin that writes ~/.claude/usage.json and shows usage-limit toasts in VS Code sessions, where the status line never runs.",
+  "author": { "name": "Tim Samoff" },
+  "homepage": "https://github.com/timsamoff/Claude-Redline",
+  "repository": "https://github.com/timsamoff/Claude-Redline",
+  "license": "MIT",
   "userConfig": {
     "toastSeconds": {
       "type": "number",
