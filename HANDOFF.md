@@ -7,9 +7,9 @@ Redline 1.0.0 is on the GitHub marketplace and works in VS Code and the desktop 
 - None since the last push (`PRIVACY.md`, the icon, version 1.0.0 are all pushed).
 
 ## Next step
-Wait for Tim. He asked how to get Redline onto "the GitHub Marketplace": there is no central one. His repo is the marketplace and install already works. Two things were offered and are pending his yes:
-1. A GitHub release `v1.0.0` (public). Notes are drafted in `Sentinel-Notes/release-notes-v1.0.0.md`. Make it with `gh release create v1.0.0 --notes-file Sentinel-Notes/release-notes-v1.0.0.md` only after he says yes.
-2. Submitting to community lists. Search found (unverified): anthropics/claude-plugins-community (reviewed, form-based; unknown whether it has the same Verified rule), ComposioHQ/awesome-claude-plugins, ccplugins/awesome-claude-code-plugins, claudemarketplaces.com. Open and check each one's rules before suggesting a submission.
+Wait for Tim. He asked how to get Redline onto "the GitHub Marketplace": there is no central one. His repo is the marketplace and install already works. Two things were offered:
+1. Done: GitHub release `v1.0.0` is published (https://github.com/timsamoff/Claude-Redline/releases/tag/v1.0.0) from `Sentinel-Notes/release-notes-v1.0.0.md`.
+2. Pending his yes: submitting to community lists. Search found (unverified): anthropics/claude-plugins-community (reviewed, form-based; unknown whether it has the same Verified rule), ComposioHQ/awesome-claude-plugins, ccplugins/awesome-claude-code-plugins, claudemarketplaces.com. Open and check each one's rules before suggesting a submission.
 
 Other options on the directory refusal: research what Verified status takes (ask first), or drop D5.
 
