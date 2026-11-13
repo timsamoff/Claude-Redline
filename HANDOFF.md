@@ -1,20 +1,16 @@
 # Handoff
 
 ## Current task and status
-Redline is installable from the GitHub marketplace and works in VS Code and the desktop app. Release prep is done in the working tree, uncommitted: version 1.0.0, the icon inside the plugin folder (`claude plugin validate --profile directory` passes with no warnings), the SVG title, and the README and CLAUDE.md updates for the desktop app. The `/redline` stagger fix is pushed and Tim confirmed it works.
+Redline 1.0.0 is pushed and ready for the directory. Tim approved the simpler icon (I1) and said D5 is a go. The new icon is in the working tree, uncommitted: `prod/claude-redline-icon_03.svg` (new, final art) and the two PNG copies re-rendered from it. The directory validator passes with no warnings. Tim does the submission himself in the Claude app (Customize, Plugins, Submit to the directory), because it needs his account.
 
 ## Files touched
-- `claude-redline/.claude-plugin/plugin.json`: version 1.0.0.
-- `claude-redline/.claude-plugin/icon.png`: copy of `assets/claude-redline-icon-512.png`.
-- `prod/claude-redline-icon_02.svg`: title, role, generator comment and blank lines removed.
-- `README.md`, `CLAUDE.md`: desktop app now tested, the one-toast limit, the version rule, the icon copy, and the F7 decision. Tim reviews the README.
+- `prod/claude-redline-icon_03.svg`: the final icon, with a title.
+- `assets/claude-redline-icon-512.png` and `claude-redline/.claude-plugin/icon.png`: rendered from it, identical.
+- `CLAUDE.md`: layout note about which icon files are final.
+- The plugin version stays 1.0.0 because nobody holds a 1.0.0 install yet. Bump it if one is ever installed with the old icon.
 
 ## Next step
-1. Commit and push the release prep (needs Tim's yes; the new icon file may hit the one-time N1 block).
-2. I1: Tim looks at `scratch/icon-mock/sheet.png` and `zoom.png` (current icon above, simpler variant below, on light and dark at 128, 64, 48, 32, 16 px) and decides. To use the variant, export `scratch/icon-small-variant.svg` at 512 px over `assets/claude-redline-icon-512.png` and `claude-redline/.claude-plugin/icon.png`.
-3. D5: submit when Tim says ready. The icon becomes the listing icon only once, at first save or submission.
-
-Local development needs a push, a version bump and `claude plugin update redline@timsamoff-tools`, then a new session. The desktop app's Code tab needs a new Code session or a quit from the tray.
+Commit and push the icon (needs Tim's yes), then Tim submits. After submission: watch for the portal's safety scan and policy review on the hooks module, and answer anything it asks. The submission links the repo root, so only committed files count. Keep the `calls:` line in the README current if the code changes.
 
 ## Open questions
 - Tim can delete the old history folder `~\.claude\projects\c--Users-Tim-Documents-VS-Code-Claude-Usage-Extension` and `~\.claude\settings.json.before-rename` when ready.
