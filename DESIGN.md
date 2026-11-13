@@ -26,7 +26,7 @@ The hooks module registers four handlers:
 - `session.measure`: fires after each turn and when a usage figure changes (context, cost or a rate-limit window).
 - `turn.complete`: fires when a turn ends. This hook reads the figures itself with `$.session.usage()`.
 
-The last two hooks run the same handler. The handler does nothing unless `$.session.surfaces()` includes `vscode`. That keeps the plugin from writing alongside a terminal status line from the same session. Otherwise it does two independent things: write the file, then decide whether to toast. A failure in one does not stop the other.
+The last two hooks run the same handler. The handler does nothing unless `$.session.surfaces()` includes `vscode` or `desktop`, neither of which runs a status line. That keeps the plugin from writing alongside a terminal status line from the same session. A reading identical to the last write is not written again for 60 seconds, which cuts duplicate writes and stays far inside the 900-second freshness limit. Otherwise it does two independent things: write the file, then decide whether to toast. A failure in one does not stop the other.
 
 The mod calls only these parts of the mods API: `$.command.register`, `$.session.surfaces`, `$.session.usage`, `$.env.get` (for `HOME` and `USERPROFILE`), `$.fs.write`, `$.store.get` and `$.store.set` (the plugin's own key-value store, for the announcement state), `$.ui.toast` and `$.ui.log` (to the debug log). It makes no network calls and starts no processes. `claude plugin validate` lists these calls.
 

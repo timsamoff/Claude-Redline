@@ -273,3 +273,27 @@ test('saved state for a window that has already reset is ignored', async () => {
   assert.equal(f.toasts.length, 1)
   assert.doesNotMatch(f.toasts[0].text, /window reset/)
 })
+test('an unchanged reading is not rewritten within 60 seconds, but a change or a later reading is', async () => {
+  const hs = await load({})
+  const f = fake()
+  const realNow = Date.now
+  try {
+    await turn(hs, f, { rateLimits: limits(41, 32) })
+    await turn(hs, f, { rateLimits: limits(41, 32) })
+    assert.equal(f.writes.length, 1)
+    await turn(hs, f, { rateLimits: limits(42, 32) })
+    assert.equal(f.writes.length, 2)
+    Date.now = () => realNow() + 61000
+    await turn(hs, f, { rateLimits: limits(42, 32) })
+    assert.equal(f.writes.length, 3)
+  } finally {
+    Date.now = realNow
+  }
+})
+
+test('the desktop app writes usage.json too', async () => {
+  const hs = await load({})
+  const f = fake({ surfaces: ['desktop'] })
+  await turn(hs, f, { rateLimits: limits(41, 32) })
+  assert.equal(f.writes.length, 1)
+})

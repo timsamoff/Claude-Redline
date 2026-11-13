@@ -87,7 +87,7 @@ The defaults work without any configuration, but you can adjust when and how Red
 
 Claude Code plugins run with your permissions, so here's exactly what Redline accesses and changes.
 
-It registers a `/redline` command in every session. When the session is running in VS Code, it also:
+It registers a `/redline` command in every session. When the session is running in VS Code (or the Claude desktop app, which is untested), it also:
 
 - reads the rate-limit windows and context fill Claude Code already has,
 - reads `HOME` or `USERPROFILE` to find your home folder,
@@ -138,7 +138,7 @@ Percentages and `updated_at` are numbers. The `*_resets_at` values are epoch sec
 
 ## Limits
 
-- Redline currently writes usage data and shows threshold and reset notifications only when Claude Code is running in VS Code, so it doesn't compete with a terminal status line. The `/redline` command is registered in every session, but it has only been tried in VS Code.
+- Redline currently writes usage data and shows threshold and reset notifications only when Claude Code is running in VS Code or the desktop app (the desktop app is untested), so it doesn't compete with a terminal status line. The `/redline` command is registered in every session, but it has only been tried in VS Code.
 - Only the 5-hour and 7-day usage windows are monitored. Other limit types are ignored.
 - `usage.json` is replaced in place rather than written atomically, so another process could read it in the middle of a write.
 - The Claude desktop app has not been tested.

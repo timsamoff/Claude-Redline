@@ -42,7 +42,7 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 ## Rules for the code
 - Do not change `~/.claude/hooks/usage-check.sh` or `~/.claude/statusline.sh`. Claude-Redline matches their format.
 - `usage-check.sh` treats a file older than 900 seconds as stale, so write on `turn.complete` as well as `session.measure`.
-- `$.fs.write` is not atomic. Write only when `$.session.surfaces()` includes `vscode`, so Claude-Redline never races the terminal status line.
+- `$.fs.write` is not atomic. Write only when `$.session.surfaces()` includes `vscode` or `desktop` (`SURFACES`), so Claude-Redline never races the terminal status line. An unchanged reading is not rewritten within `REWRITE_AFTER_SECONDS` (60).
 - Toast levels default to the constant `DEFAULT_LEVELS` (70, 90) and can be replaced by the `levels` option (up to 5). `ALERT_AT` (95) is always a level on top of those and gets the alert duration. Each is announced once per window per reset cycle. Do not write a level or duration as a bare number elsewhere.
 - Icon colors are fixed by `YELLOW_AT` (59) and `RED_AT` (89), independent of the `levels` setting. Each window gets its own toast (a toast does not render a newline), and `showFiveHour` and `showSevenDay` turn a window off. Reset times follow the `timeFormat` setting.
 - The `/redline` command registers on `session.start` and is served by `command.run`. It only reads, and shows the result in a toast (normal duration) instead of chat text.

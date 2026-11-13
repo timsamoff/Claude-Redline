@@ -9,6 +9,10 @@ const MAX_LEVELS = 5
 // Icon colors, in percent used: yellow from YELLOW_AT, red from RED_AT. Fixed, not tied to the levels setting.
 const YELLOW_AT = 59
 const RED_AT = 89
+// Surfaces with no status line, where Redline writes usage.json and toasts.
+const SURFACES = ['vscode', 'desktop']
+// An unchanged reading is not rewritten within this many seconds. The file stays far inside the 900-second freshness limit.
+const REWRITE_AFTER_SECONDS = 60
 const WINDOWS = [['five_hour', '5h'], ['seven_day', '7d']]
 const GREEN = '\u{1F7E2}'
 const YELLOW = '\u{1F7E1}'
@@ -28,6 +32,7 @@ const MAX_SECONDS = 120
 // Per window: { ms: reset time in ms, fired: highest level already toasted }.
 const state = Object.fromEntries(WINDOWS.map(([kind]) => [kind, null]))
 let writeFailed = false
+let lastWrite = null
 
 // Settings in effect. Replaced from userConfig in register().
 let levels = DEFAULT_LEVELS
@@ -147,16 +152,19 @@ async function writeUsage($, usage) {
   const home = await homeDir($)
   if (!home) throw new Error('neither HOME nor USERPROFILE is set')
 
-  const body = {
+  const reading = {
     five_hour_pct: five.pct,
     seven_day_pct: seven.pct,
     five_hour_resets_at: five.resetsAt,
     seven_day_resets_at: seven.resetsAt,
     context_pct: usage.context && usage.context.percent != null ? usage.context.percent : null,
-    updated_at: Math.floor(Date.now() / 1000),
   }
+  const key = JSON.stringify(reading)
+  if (lastWrite && lastWrite.key === key && Date.now() - lastWrite.at < REWRITE_AFTER_SECONDS * 1000) return 'skipped: unchanged within ' + REWRITE_AFTER_SECONDS + 's'
+  const body = { ...reading, updated_at: Math.floor(Date.now() / 1000) }
   const path = home + '/.claude/usage.json'
   await $.fs.write(path, JSON.stringify(body, null, 2) + '\n')
+  lastWrite = { key, at: Date.now() }
   return 'wrote ' + path + ' (5h ' + five.pct + ', 7d ' + seven.pct + ')'
 }
 
@@ -207,7 +215,7 @@ function notify($, rateLimits) {
 
 async function handle($, usage, label) {
   const surfaces = await $.session.surfaces()
-  if (!surfaces.includes('vscode')) {
+  if (!SURFACES.some((s) => surfaces.includes(s))) {
     $.ui.log('redline[' + label + '] skipped: surfaces ' + JSON.stringify(surfaces), { to: 'debug' })
     return
   }

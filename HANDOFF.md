@@ -1,16 +1,16 @@
 # Handoff
 
 ## Current task and status
-Redline works and is pushed; Tim has used it live since 2026-10-28 and confirmed P7 and D2. The folder is now Claude-Redline. F8 (the register.js cleanup) is committed; G9 (tests in pre-push, rule S1) is finished in the working tree, and Tim said to push everything together.
+Redline works and is pushed; Tim has used it live since 2026-10-28 and confirmed P7 and D2. The folder is now Claude-Redline. F8 (the register.js cleanup) is committed; G9 (tests in pre-push, rule S1) is committed and pushed. F6 and D3 are committed and pushed, so Tim can install from the marketplace and test them.
 
 ## Files touched
 - `claude-redline/hooks/register.js`: F8 cleanup (window list derived from `WINDOWS`, `timeoutMs` parameter, no unused catch binding, aligned failure labels).
-- `scripts/sentinel/check.mjs`: pre-push also runs the register.js tests (S1).
-- `scripts/sentinel/tests/integration.mjs`: new scenario, a failing test blocks the push.
-- `CLAUDE.md`: the On push gate bullet mentions S1.
+- `claude-redline/hooks/register.js`: F6 skips an unchanged write for REWRITE_AFTER_SECONDS (60); D3 writes and toasts on SURFACES (vscode, desktop).
+- `tests/redline.test.mjs`: two new tests (throttle, desktop). 24 pass; the regress harness differs only by three skipped repeat writes.
+- `README.md`, `DESIGN.md`, `CLAUDE.md`: surfaces and the throttle.
 
 ## Next step
-Work the agreed order, one item at a time: F6 and D3 together (skip a `usage.json` write when percentages are unchanged and the last write was under about 60 seconds ago; also write when the surface is `desktop`, which Tim must test himself), F7 (build a side-by-side mockup of icon colors 59 and 89 against the status line's 70 and 95, and show Tim before changing anything), then I1, F12, F16, and V2 last, then P9 and D5.
+Tim tests F6 (usage.json still updates in VS Code, rewrites at most about once a minute for an unchanged reading) and D3 (does the plugin load in the Claude desktop app and write usage.json; toasts there too). The desktop app shows only installed plugins, so D3 needs the marketplace install (P9) first. Then mark F6 and D3 done in TODO.md, and go on in the agreed order: F7 (build a side-by-side mockup of icon colors 59 and 89 against the status line's 70 and 95, and show Tim before changing anything), then I1, F12, F16, and V2 last, then P9 and D5.
 
 P9 is still open: Redline loads only as `redline@inline` through `CLAUDE_CODE_PLUGIN_DIRS` and is not installed in the real config. After P9, local development needs the env var back or a push plus `claude plugin update`, so do it right before the directory submission. The directory validator says the icon may become the listing icon only once, at first save or submission, so V2 must use the final icon.
 
