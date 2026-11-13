@@ -326,6 +326,12 @@ git(['remote', 'add', 'origin', remote])
 const pushClean = git(['push', 'origin', 'main'])
 passes('pre-push: a clean tree pushes', pushClean)
 
+w('tests/redline.test.mjs', r('tests/redline.test.mjs') + "\ntest('forced failure', () => assert.fail('forced'))\n")
+git(['add', 'tests/redline.test.mjs'])
+git(['commit', '--no-verify', '-m', 'Break a test'])
+blocked('pre-push: a failing test blocks the push', git(['push', 'origin', 'main']), '[S1]')
+reset()
+
 sub(REG, 'Math.min(Math.max(n, MIN_SECONDS), MAX_SECONDS)', 'Math.min(Math.max(n, 1), 120)')
 git(['add', REG])
 git(['commit', '--no-verify', '-m', 'Bypass the commit hook'])

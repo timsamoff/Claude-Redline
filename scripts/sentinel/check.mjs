@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Sentinel gate checks. Run with no arguments for a diff check; see CLAUDE.md for every mode.
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 import * as git from './lib/git.mjs'
 import { loadJson, format, applyExceptions, applyBaseline } from './lib/report.mjs'
@@ -65,6 +66,15 @@ function hooksIntact(tree) {
   return out
 }
 
+// S1: the register.js tests must pass before a push. Skipped when the test file is absent.
+function testSuite() {
+  if (!existsSync(join(root, 'tests', 'redline.test.mjs'))) return []
+  const r = spawnSync(process.execPath, ['--test', 'tests/redline.test.mjs'], { cwd: root, encoding: 'utf8' })
+  if (r.status === 0) return []
+  const tail = ((r.stdout || '') + (r.stderr || '')).trim().split('\n').slice(-12).join('\n')
+  return [{ rule: 'S1', file: 'tests/redline.test.mjs', key: 'tests-failed', message: 'node --test tests/redline.test.mjs failed.\n' + tail, fix: 'Fix the failing test or the code it covers, then push again.' }]
+}
+
 function fullChecks(tree, { pushHook = false } = {}) {
   const v = [...stateChecks(tree), ...validateTree(tree, rules), ...git.ignoredButTracked(root).map((p) => ({ rule: 'K7', file: p, key: `tracked-ignored:${p}`, message: 'This tracked file also matches .gitignore.', fix: 'Untrack it with git rm --cached, or remove the .gitignore rule.' }))]
   v.push(...hooksIntact(tree))
@@ -112,7 +122,7 @@ function main() {
       const { v, reminders } = commitChecks(git.stagedTree(root), changes, { record: true })
       return finish('commit', v, { reminders })
     }
-    if (name === 'pre-push') return finish('push', fullChecks(git.headTree(root)))
+    if (name === 'pre-push') return finish('push', [...fullChecks(git.headTree(root)), ...testSuite()])
     throw new Error(`unknown hook "${name}"`)
   }
   if (has('--full')) {
