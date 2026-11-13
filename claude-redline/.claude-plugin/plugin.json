@@ -1,5 +1,6 @@
 {
   "name": "redline",
+  "version": "1.0.0",
   "displayName": "Claude-Redline",
   "description": "A Claude Code plugin that writes ~/.claude/usage.json, shows usage-limit toasts in VS Code sessions where the status line never runs, and adds a /redline command.",
   "author": {

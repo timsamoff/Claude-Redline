@@ -24,7 +24,7 @@ No dashboard. No charts. No history. No transcript scanning. No OAuth token acce
 
 ## Install
 
-You need Claude Code and the VS Code extension at version 2.1.301 or later. That is the oldest version Redline has been tested with.
+You need Claude Code at version 2.1.301 or later, in VS Code or in the Claude desktop app's Code tab. 2.1.301 is the oldest version Redline has been tested with in VS Code. The desktop app has been tried with Claude Code 2.1.321.
 
 From the Claude Code marketplace:
 
@@ -138,10 +138,10 @@ Percentages and `updated_at` are numbers. The `*_resets_at` values are epoch sec
 
 ## Limits
 
-- Redline currently writes usage data and shows threshold and reset notifications only when Claude Code is running in VS Code or the desktop app (the desktop app is untested), so it doesn't compete with a terminal status line. The `/redline` command is registered in every session, but it has only been tried in VS Code.
+- Redline currently writes usage data and shows threshold and reset notifications only when Claude Code is running in VS Code or the desktop app, so it doesn't compete with a terminal status line. The `/redline` command is registered in every session, but it has only been tried in VS Code and the desktop app.
 - Only the 5-hour and 7-day usage windows are monitored. Other limit types are ignored.
 - `usage.json` is replaced in place rather than written atomically, so another process could read it in the middle of a write.
-- The Claude desktop app has not been tested.
+- The desktop app shows one toast at a time, so `/redline` shows the 7-day toast after the 5-hour toast has timed out. If both windows cross a level on the same reading, the desktop app may show only one of the two.
 - Rate-limit information is only available for claude.ai Pro and Max subscriptions. If Claude Code doesn't provide usage data for your account, Redline has nothing to report.
 
 ## Status
@@ -150,7 +150,9 @@ Redline is early and intentionally small.
 
 The current version has been verified in live VS Code sessions with Claude Code 2.1.301. The plugin loads, receives both usage windows, keeps `usage.json` updated, and displays notifications with the correct icons.
 
-Threshold notifications, the `/redline` command, time-format options, and the 5-hour and 7-day On/Off settings have also been verified in live sessions, along with the notification for a usage window resetting.
+In the desktop app's Code tab, `usage.json` stays current without VS Code running, and `/redline` shows both windows one after the other.
+
+Threshold notifications in VS Code, the `/redline` command, time-format options, and the 5-hour and 7-day On/Off settings have also been verified in live sessions, along with the notification for a usage window resetting.
 
 If you run into something, open an issue.
 

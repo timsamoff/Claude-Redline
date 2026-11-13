@@ -16,7 +16,7 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 
 ## Layout
 - `claude-redline/` is the plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.js` (ES module, no DOM, no Node, every effect goes through `$`).
-- `prod/` holds the icon art (Illustrator source and SVG export). `assets/` holds the 512 px PNG the README shows. All are tracked.
+- `prod/` holds the icon art (Illustrator source and SVG export). `assets/` holds the 512 px PNG the README shows. `claude-redline/.claude-plugin/icon.png` is a copy of that PNG for the directory, which looks only inside the plugin folder. Keep the two identical. All are tracked.
 - `.githooks/` (git hook shims), `scripts/sentinel/` (the gate checks, their rules, tests and the session-start script), `.claude/settings.json` (a SessionStart hook that prints `HANDOFF.md`) and `.gitattributes` (keeps text files on LF, so a Windows checkout does not convert them, and marks the PNG and Illustrator files as binary) are tracked. None of them ships with the plugin, because the plugin is only `claude-redline/`.
 - `README.md`, `LICENSE` (MIT), `CLAUDE.md`, `DESIGN.md`, `HANDOFF.md` and `.claude-plugin/marketplace.json` (marketplace `timsamoff-tools`, entry `redline`, source `./claude-redline`) are tracked at the repo root. Keep `CLAUDE.md` out of `claude-redline/`, because `claude plugin validate` warns about a `CLAUDE.md` at the plugin root.
 - Local only (git-ignored): `Sentinel-Notes/` (audit report, `TODO.md`, design briefs, `archive/`), `Sentinel-Prompts/`, `PROJECT_PROFILE.md`, `INTEGRATION_CHECKLIST.md`, `scratch/`, and the files Claude Code generates in `claude-redline/` (`tsconfig.json`, `.claude-plugin/types/`).
@@ -44,13 +44,13 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 - `usage-check.sh` treats a file older than 900 seconds as stale, so write on `turn.complete` as well as `session.measure`.
 - `$.fs.write` is not atomic. Write only when `$.session.surfaces()` includes `vscode` or `desktop` (`SURFACES`), so Claude-Redline never races the terminal status line. An unchanged reading is not rewritten within `REWRITE_AFTER_SECONDS` (60).
 - Toast levels default to the constant `DEFAULT_LEVELS` (70, 90) and can be replaced by the `levels` option (up to 5). `ALERT_AT` (95) is always a level on top of those and gets the alert duration. Each is announced once per window per reset cycle. Do not write a level or duration as a bare number elsewhere.
-- Icon colors are fixed by `YELLOW_AT` (59) and `RED_AT` (89), independent of the `levels` setting. Each window gets its own toast (a toast does not render a newline), and `showFiveHour` and `showSevenDay` turn a window off. Reset times follow the `timeFormat` setting.
+- Icon colors are fixed by `YELLOW_AT` (59) and `RED_AT` (89), independent of the `levels` setting. They stay different from the status line's 70 and 95 by Tim's decision (2026-11-13). Each window gets its own toast (a toast does not render a newline), and `showFiveHour` and `showSevenDay` turn a window off. Reset times follow the `timeFormat` setting.
 - The `/redline` command registers on `session.start` and is served by `command.run`. It only reads, and shows the result in a toast (normal duration) instead of chat text. The desktop app shows only the first of two toasts raised together (verified 2026-11-13), so there `toastEach` raises the second after the first times out, through `$.clock.after`.
 - Setting descriptions in `plugin.json` are short, written for the `/plugin` screen, and do not repeat the default. The README Settings table carries the defaults.
 - The `userConfig` defaults and limits in `plugin.json` must equal the constants in `register.js` (`DEFAULT_LEVELS` as the string "70, 90", and the duration constants). JSON cannot import them, so check both when changing either.
 - Build toast text only through `segment()` and `failureText()`, so the toast text cannot drift from the real format. Icon, label and percent are joined with non-breaking spaces, which did not stop bad wraps live, so each window gets its own toast and only a window with news is toasted.
 - The announcement state is saved with `$.store` under `windows` and merged on every reading, so reloads and second windows do not repeat toasts. Saved windows whose reset has passed are ignored.
-- `plugin.json` has no `version` until the first real release (see the publishing plan).
+- `plugin.json` pins `version` 1.0.0 (2026-11-13). Bump it in every commit that changes the plugin folder and is pushed, or `claude plugin update` tells users they are current.
 - Functions that take `$` stay in `register.js`. The validator rejects passing `$` to a function imported from another file. Event names passed to `on` must be string literals.
 - Run `claude plugin validate ./claude-redline` after any change to the plugin folder.
 - Never read credential files or call undocumented usage endpoints without Tim's explicit say-so.
@@ -131,7 +131,7 @@ Details and the full step list are in `Sentinel-Notes/submission-readiness-desig
 - Keep the plugin in `claude-redline/`. Add `.claude-plugin/marketplace.json` at the repo root with one entry (`name` `redline`, `source` `./claude-redline`). Put the README and LICENSE at the repo root too.
 - Users install with `claude plugin marketplace add timsamoff/Claude-Redline`, then `claude plugin install redline@<marketplace-name>`.
 - Anthropic's directory is stricter: it needs a README of 40 words or more, a LICENSE (or a `license` SPDX id), and a square PNG or JPEG icon, 512 to 2048 px under 2 MB. SVG is not accepted. Check with `claude plugin validate ./claude-redline --profile directory`.
-- `version`: if `plugin.json` sets it and commits are pushed without bumping it, `claude plugin update` tells users they are current. Plan: omit it while the project changes fast, pin 1.0.0 at the first real release.
+- `version`: pinned at 1.0.0 (2026-11-13). If a commit that changes the plugin folder is pushed without bumping it, `claude plugin update` tells users they are current.
 - The README must say plainly that this is a mod running with the user's permissions, and what it does: reads rate-limit windows, writes `~/.claude/usage.json`, shows toasts, no network calls. Quote the `calls:` lines from `claude plugin validate`. Document the `usage.json` format and say it mirrors Tim's own status line script.
 
 ## Environment notes
