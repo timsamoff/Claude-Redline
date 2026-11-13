@@ -106,7 +106,7 @@ claude plugin validate ./claude-redline
 ```text
 ./register.js hooks: session.start, command.run{command=redline}, session.measure, turn.complete
 ./register.js answers its own command: command.run{command=redline}
-./register.js calls: $.command.register, $.env.get (via homeDir), $.fs.write (via writeUsage), $.session.surfaces (via handle), $.session.usage, $.store.get (via loadState), $.store.set (via handle), $.ui.log, $.ui.toast (via handle, toastEach)
+./register.js calls: $.clock.after (via toastEach), $.command.register, $.env.get (via homeDir), $.fs.write (via writeUsage), $.session.surfaces, $.session.usage, $.store.get (via loadState), $.store.set (via handle), $.ui.log, $.ui.toast (via handle, toastEach)
 ./register.js env writes: nothing
 ./register.js env reads: HOME, USERPROFILE
 ```

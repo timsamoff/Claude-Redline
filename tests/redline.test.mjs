@@ -297,3 +297,22 @@ test('the desktop app writes usage.json too', async () => {
   await turn(hs, f, { rateLimits: limits(41, 32) })
   assert.equal(f.writes.length, 1)
 })
+
+test('/redline staggers the second toast on the desktop app only', async () => {
+  const usage = { rateLimits: limits(41, 32) }
+  const hs = await load({ toastSeconds: 6 })
+  const timers = []
+  const d = fake({ surfaces: ['desktop'], usage })
+  d.$.clock = { after: (ms, fn) => timers.push({ ms, fn }) }
+  await command(hs, d)
+  assert.equal(d.toasts.length, 1)
+  assert.equal(timers.length, 1)
+  assert.equal(timers[0].ms, 6000)
+  timers[0].fn()
+  assert.equal(d.toasts.length, 2)
+  assert.match(d.toasts[1].text, /7d/)
+
+  const v = fake({ surfaces: ['vscode'], usage })
+  await command(hs, v)
+  assert.equal(v.toasts.length, 2)
+})

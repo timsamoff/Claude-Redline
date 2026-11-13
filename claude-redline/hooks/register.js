@@ -131,9 +131,12 @@ function summary(rateLimits) {
   return [WINDOWS.some(([kind]) => shown[kind]) ? 'No usage data yet. It appears after the first response, on Pro and Max plans.' : 'Both windows are turned off in the Redline settings.']
 }
 
-// One toast per text, so each window has its own.
-function toastEach($, texts, timeoutMs) {
-  for (const text of texts) $.ui.toast(text, { timeoutMs })
+// One toast per text, so each window has its own. A staggerMs above 0 shows each after the last has timed out.
+function toastEach($, texts, timeoutMs, staggerMs = 0) {
+  texts.forEach((text, i) => {
+    if (i === 0 || !staggerMs) $.ui.toast(text, { timeoutMs })
+    else $.clock.after(i * staggerMs, () => $.ui.toast(text, { timeoutMs }))
+  })
 }
 
 // USERPROFILE first, because on Windows HOME can be a Git Bash path such as /c/Users/name.
@@ -266,7 +269,9 @@ export function register(on, options) {
 
   on('command.run', { command: 'redline' }, async ($) => {
     try {
-      toastEach($, summary((await $.session.usage()).rateLimits), normalMs)
+      const surfaces = await $.session.surfaces()
+      const desktopOnly = surfaces.includes('desktop') && !surfaces.includes('vscode')
+      toastEach($, summary((await $.session.usage()).rateLimits), normalMs, desktopOnly ? normalMs : 0)
       return {}
     } catch (err) {
       return { text: 'Could not show usage: ' + String(err) }
