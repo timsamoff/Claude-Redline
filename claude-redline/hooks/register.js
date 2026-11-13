@@ -26,7 +26,7 @@ const MIN_SECONDS = 1
 const MAX_SECONDS = 120
 
 // Per window: { ms: reset time in ms, fired: highest level already toasted }.
-const state = { five_hour: null, seven_day: null }
+const state = Object.fromEntries(WINDOWS.map(([kind]) => [kind, null]))
 let writeFailed = false
 
 // Settings in effect. Replaced from userConfig in register().
@@ -35,7 +35,7 @@ let normalMs = DEFAULT_TOAST_SECONDS * 1000
 let alertMs = DEFAULT_ALERT_SECONDS * 1000
 let timeFormat = TIME_FORMATS[0]
 // Which windows get toasts. Replaced from userConfig in register().
-const shown = { five_hour: true, seven_day: true }
+const shown = Object.fromEntries(WINDOWS.map(([kind]) => [kind, true]))
 
 function secondsToMs(value, fallbackSeconds) {
   const n = Number(value)
@@ -84,7 +84,7 @@ function resetTime(ms) {
     let text = 'at ' + d.toLocaleTimeString([], clock) + (utc ? ' UTC' : '')
     if (dayKey(d, zone) !== dayKey(new Date(), zone)) text = d.toLocaleDateString([], { weekday: 'long', ...zone }) + ' ' + text
     return text
-  } catch (err) {
+  } catch {
     return ''
   }
 }
@@ -127,8 +127,8 @@ function summary(rateLimits) {
 }
 
 // One toast per text, so each window has its own.
-function toastEach($, texts, ms) {
-  for (const text of texts) $.ui.toast(text, { timeoutMs: ms })
+function toastEach($, texts, timeoutMs) {
+  for (const text of texts) $.ui.toast(text, { timeoutMs })
 }
 
 // USERPROFILE first, because on Windows HOME can be a Git Bash path such as /c/Users/name.
@@ -251,7 +251,7 @@ export function register(on, options) {
     try {
       await $.command.register({ name: 'redline', description: 'Show your current 5-hour and 7-day usage' })
     } catch (err) {
-      $.ui.log('redline[start] could not add /redline: ' + String(err), { to: 'debug' })
+      $.ui.log('redline[start] command registration failed: ' + String(err), { to: 'debug' })
     }
     return next(e)
   })
@@ -269,7 +269,7 @@ export function register(on, options) {
     try {
       await handle($, e, 'measure:' + (e.changed || []).join(','))
     } catch (err) {
-      $.ui.log('redline[measure] failed: ' + String(err), { to: 'debug' })
+      $.ui.log('redline[measure] handler failed: ' + String(err), { to: 'debug' })
     }
     return next(e)
   })
@@ -278,7 +278,7 @@ export function register(on, options) {
     try {
       await handle($, await $.session.usage(), 'turn')
     } catch (err) {
-      $.ui.log('redline[turn] failed: ' + String(err), { to: 'debug' })
+      $.ui.log('redline[turn] handler failed: ' + String(err), { to: 'debug' })
     }
     return next(e)
   })
