@@ -159,3 +159,7 @@ If you run into something, open an issue.
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
+
+## Privacy
+
+Redline makes no network calls and sends nothing anywhere. See [`PRIVACY.md`](PRIVACY.md).

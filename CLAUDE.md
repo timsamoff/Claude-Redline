@@ -18,7 +18,27 @@ Tim tests changes himself. Do not claim a change works in VS Code until he repor
 - `claude-redline/` is the plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.js` (ES module, no DOM, no Node, every effect goes through `$`).
 - `prod/` holds the icon art: `claude-redline-icon_03.svg` is the final icon (the simpler small-size design, hand-written SVG, no Illustrator source, approved 2026-11-13); `_01.ai` and `_02.ai`/`.svg` are the earlier detailed design. `assets/` holds the 512 px PNG the README shows, rendered from `_03`. `claude-redline/.claude-plugin/icon.png` is a copy of that PNG for the directory, which looks only inside the plugin folder. Keep the two identical. All are tracked.
 - `.githooks/` (git hook shims), `scripts/sentinel/` (the gate checks, their rules, tests and the session-start script), `.claude/settings.json` (a SessionStart hook that prints `HANDOFF.md`) and `.gitattributes` (keeps text files on LF, so a Windows checkout does not convert them, and marks the PNG and Illustrator files as binary) are tracked. None of them ships with the plugin, because the plugin is only `claude-redline/`.
-- `README.md`, `LICENSE` (MIT), `CLAUDE.md`, `DESIGN.md`, `HANDOFF.md` and `.claude-plugin/marketplace.json` (marketplace `timsamoff-tools`, entry `redline`, source `./claude-redline`) are tracked at the repo root. Keep `CLAUDE.md` out of `claude-redline/`, because `claude plugin validate` warns about a `CLAUDE.md` at the plugin root.
+- `README.md`, `LICENSE` (MIT), `PRIVACY.md` (the privacy policy the directory form asks for; keep it true to the `# Claude-Redline
+
+Claude Code plugin mod that writes `~/.claude/usage.json` in VS Code sessions, where the status line never runs, and shows usage-limit toasts. `DESIGN.md` explains how it works. `HANDOFF.md` holds the current unfinished state.
+
+## Status
+Working and pushed. In live VS Code sessions the mod loads, reads both rate-limit windows, writes `usage.json` in the status line's format, and shows toasts. Verified live (2026-10-28, per Tim): real threshold toasts, a window-reset toast, `/redline`, the `timeFormat` choices and the On/Off pickers for the window toasts. Shareable through a GitHub marketplace once pushed: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` exist and validate. The manifest has `author`, `homepage`, `repository` and `license`. Still missing for Anthropic's directory: a PNG icon inside the plugin folder. A marketplace install works (2026-11-12): it loads in VS Code and in the Claude desktop app's Code tab, where the surface is `desktop`, usage.json is written and `/redline` shows a toast (per Tim).
+
+Tim tests changes himself. Do not claim a change works in VS Code until he reports what he saw.
+
+## Naming
+- The project, repo and folder are Claude-Redline. The plugin ID in `plugin.json` is `redline` and must stay that: `claude plugin validate` rejects third-party plugin names that start with `claude-`.
+- Plugin ID `redline` is permanent. Renaming breaks existing installs. `displayName` can differ.
+- The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading. `displayName` does not change any of them (checked live, 2026-10-28).
+- The marketplace `name` is the part after `@` in an install ID. It must not be an official name or resemble one. Suggested: `timsamoff-tools`.
+- The entry `name` in `marketplace.json` must equal the `name` in `plugin.json`.
+
+## Layout
+- `claude-redline/` is the plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.js` (ES module, no DOM, no Node, every effect goes through `$`).
+- `prod/` holds the icon art: `claude-redline-icon_03.svg` is the final icon (the simpler small-size design, hand-written SVG, no Illustrator source, approved 2026-11-13); `_01.ai` and `_02.ai`/`.svg` are the earlier detailed design. `assets/` holds the 512 px PNG the README shows, rendered from `_03`. `claude-redline/.claude-plugin/icon.png` is a copy of that PNG for the directory, which looks only inside the plugin folder. Keep the two identical. All are tracked.
+- `.githooks/` (git hook shims), `scripts/sentinel/` (the gate checks, their rules, tests and the session-start script), `.claude/settings.json` (a SessionStart hook that prints `HANDOFF.md`) and `.gitattributes` (keeps text files on LF, so a Windows checkout does not convert them, and marks the PNG and Illustrator files as binary) are tracked. None of them ships with the plugin, because the plugin is only `claude-redline/`.
+ call set and what is written), `CLAUDE.md`, `DESIGN.md`, `HANDOFF.md` and `.claude-plugin/marketplace.json` (marketplace `timsamoff-tools`, entry `redline`, source `./claude-redline`) are tracked at the repo root. Keep `CLAUDE.md` out of `claude-redline/`, because `claude plugin validate` warns about a `CLAUDE.md` at the plugin root.
 - Local only (git-ignored): `Sentinel-Notes/` (audit report, `TODO.md`, design briefs, `archive/`), `Sentinel-Prompts/`, `PROJECT_PROFILE.md`, `INTEGRATION_CHECKLIST.md`, `scratch/`, and the files Claude Code generates in `claude-redline/` (`tsconfig.json`, `.claude-plugin/types/`).
 - `CLAUDE.md` is shared on purpose. `Sentinel-Notes/` is local-only by Tim's choice, and `HANDOFF.md` is tracked because he sometimes runs sessions on other machines.
 
@@ -103,6 +123,132 @@ Tim sometimes runs sessions away from this computer. A remote session sees only 
 
 ## Keep docs in step (same commit)
 - `CLAUDE.md`: when a named constant, a hooked event, the set of `$` calls, the `usage.json` keys, a `userConfig` key, the plugin name or layout, or a convention changes.
+- `PRIVACY.md`: when what Redline reads, writes, stores or sends changes (the `# Claude-Redline
+
+Claude Code plugin mod that writes `~/.claude/usage.json` in VS Code sessions, where the status line never runs, and shows usage-limit toasts. `DESIGN.md` explains how it works. `HANDOFF.md` holds the current unfinished state.
+
+## Status
+Working and pushed. In live VS Code sessions the mod loads, reads both rate-limit windows, writes `usage.json` in the status line's format, and shows toasts. Verified live (2026-10-28, per Tim): real threshold toasts, a window-reset toast, `/redline`, the `timeFormat` choices and the On/Off pickers for the window toasts. Shareable through a GitHub marketplace once pushed: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` exist and validate. The manifest has `author`, `homepage`, `repository` and `license`. Still missing for Anthropic's directory: a PNG icon inside the plugin folder. A marketplace install works (2026-11-12): it loads in VS Code and in the Claude desktop app's Code tab, where the surface is `desktop`, usage.json is written and `/redline` shows a toast (per Tim).
+
+Tim tests changes himself. Do not claim a change works in VS Code until he reports what he saw.
+
+## Naming
+- The project, repo and folder are Claude-Redline. The plugin ID in `plugin.json` is `redline` and must stay that: `claude plugin validate` rejects third-party plugin names that start with `claude-`.
+- Plugin ID `redline` is permanent. Renaming breaks existing installs. `displayName` can differ.
+- The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading. `displayName` does not change any of them (checked live, 2026-10-28).
+- The marketplace `name` is the part after `@` in an install ID. It must not be an official name or resemble one. Suggested: `timsamoff-tools`.
+- The entry `name` in `marketplace.json` must equal the `name` in `plugin.json`.
+
+## Layout
+- `claude-redline/` is the plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.js` (ES module, no DOM, no Node, every effect goes through `$`).
+- `prod/` holds the icon art: `claude-redline-icon_03.svg` is the final icon (the simpler small-size design, hand-written SVG, no Illustrator source, approved 2026-11-13); `_01.ai` and `_02.ai`/`.svg` are the earlier detailed design. `assets/` holds the 512 px PNG the README shows, rendered from `_03`. `claude-redline/.claude-plugin/icon.png` is a copy of that PNG for the directory, which looks only inside the plugin folder. Keep the two identical. All are tracked.
+- `.githooks/` (git hook shims), `scripts/sentinel/` (the gate checks, their rules, tests and the session-start script), `.claude/settings.json` (a SessionStart hook that prints `HANDOFF.md`) and `.gitattributes` (keeps text files on LF, so a Windows checkout does not convert them, and marks the PNG and Illustrator files as binary) are tracked. None of them ships with the plugin, because the plugin is only `claude-redline/`.
+- `README.md`, `LICENSE` (MIT), `PRIVACY.md` (the privacy policy the directory form asks for; keep it true to the `# Claude-Redline
+
+Claude Code plugin mod that writes `~/.claude/usage.json` in VS Code sessions, where the status line never runs, and shows usage-limit toasts. `DESIGN.md` explains how it works. `HANDOFF.md` holds the current unfinished state.
+
+## Status
+Working and pushed. In live VS Code sessions the mod loads, reads both rate-limit windows, writes `usage.json` in the status line's format, and shows toasts. Verified live (2026-10-28, per Tim): real threshold toasts, a window-reset toast, `/redline`, the `timeFormat` choices and the On/Off pickers for the window toasts. Shareable through a GitHub marketplace once pushed: `README.md`, an MIT `LICENSE` and `.claude-plugin/marketplace.json` exist and validate. The manifest has `author`, `homepage`, `repository` and `license`. Still missing for Anthropic's directory: a PNG icon inside the plugin folder. A marketplace install works (2026-11-12): it loads in VS Code and in the Claude desktop app's Code tab, where the surface is `desktop`, usage.json is written and `/redline` shows a toast (per Tim).
+
+Tim tests changes himself. Do not claim a change works in VS Code until he reports what he saw.
+
+## Naming
+- The project, repo and folder are Claude-Redline. The plugin ID in `plugin.json` is `redline` and must stay that: `claude plugin validate` rejects third-party plugin names that start with `claude-`.
+- Plugin ID `redline` is permanent. Renaming breaks existing installs. `displayName` can differ.
+- The host shows the lowercase ID `redline` in toast labels, `/redline` output and the `/plugin` settings heading. `displayName` does not change any of them (checked live, 2026-10-28).
+- The marketplace `name` is the part after `@` in an install ID. It must not be an official name or resemble one. Suggested: `timsamoff-tools`.
+- The entry `name` in `marketplace.json` must equal the `name` in `plugin.json`.
+
+## Layout
+- `claude-redline/` is the plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.js` (ES module, no DOM, no Node, every effect goes through `$`).
+- `prod/` holds the icon art: `claude-redline-icon_03.svg` is the final icon (the simpler small-size design, hand-written SVG, no Illustrator source, approved 2026-11-13); `_01.ai` and `_02.ai`/`.svg` are the earlier detailed design. `assets/` holds the 512 px PNG the README shows, rendered from `_03`. `claude-redline/.claude-plugin/icon.png` is a copy of that PNG for the directory, which looks only inside the plugin folder. Keep the two identical. All are tracked.
+- `.githooks/` (git hook shims), `scripts/sentinel/` (the gate checks, their rules, tests and the session-start script), `.claude/settings.json` (a SessionStart hook that prints `HANDOFF.md`) and `.gitattributes` (keeps text files on LF, so a Windows checkout does not convert them, and marks the PNG and Illustrator files as binary) are tracked. None of them ships with the plugin, because the plugin is only `claude-redline/`.
+ call set and what is written), `CLAUDE.md`, `DESIGN.md`, `HANDOFF.md` and `.claude-plugin/marketplace.json` (marketplace `timsamoff-tools`, entry `redline`, source `./claude-redline`) are tracked at the repo root. Keep `CLAUDE.md` out of `claude-redline/`, because `claude plugin validate` warns about a `CLAUDE.md` at the plugin root.
+- Local only (git-ignored): `Sentinel-Notes/` (audit report, `TODO.md`, design briefs, `archive/`), `Sentinel-Prompts/`, `PROJECT_PROFILE.md`, `INTEGRATION_CHECKLIST.md`, `scratch/`, and the files Claude Code generates in `claude-redline/` (`tsconfig.json`, `.claude-plugin/types/`).
+- `CLAUDE.md` is shared on purpose. `Sentinel-Notes/` is local-only by Tim's choice, and `HANDOFF.md` is tracked because he sometimes runs sessions on other machines.
+
+## Where information goes
+- A tracked, unresolved inconsistency goes in `Sentinel-Notes/TODO.md`, with a one-line pointer here so drift is not mistaken for convention.
+- A settled operational convention goes here.
+- A settled architectural decision, for a human reader, goes in `DESIGN.md`.
+- Something an outside user needs goes in the README.
+- A declined suggestion goes in `TODO.md` if it is "not now", or here or in `DESIGN.md` with its reasoning if it is a settled "no".
+
+## usage.json contract (must match `~/.claude/statusline.sh`)
+- Keys: `five_hour_pct`, `seven_day_pct`, `five_hour_resets_at`, `seven_day_resets_at`, `context_pct`, `updated_at`.
+- Percents and `updated_at` are numbers. The `*_resets_at` values are epoch seconds as strings.
+- A missing window is `null` for the percent and `""` for the reset time. If neither window exists, skip the write.
+- `$.session.usage()` gives `percentUsed` (0 to 100) and `resetsAt` as an ISO 8601 string. Convert with `String(Math.floor(Date.parse(resetsAt) / 1000))`.
+- Map by `kind`: `five_hour` and `seven_day` only. Ignore `spend_limit` and model-scoped kinds.
+
+## Tests
+`node --test tests/redline.test.mjs` runs `register.js` against a fake `$` (usage.json contract, levels, reset detection, `/redline`). Run it after any change to `register.js`.
+
+## Rules for the code
+- Do not change `~/.claude/hooks/usage-check.sh` or `~/.claude/statusline.sh`. Claude-Redline matches their format.
+- `usage-check.sh` treats a file older than 900 seconds as stale, so write on `turn.complete` as well as `session.measure`.
+- `$.fs.write` is not atomic. Write only when `$.session.surfaces()` includes `vscode` or `desktop` (`SURFACES`), so Claude-Redline never races the terminal status line. An unchanged reading is not rewritten within `REWRITE_AFTER_SECONDS` (60).
+- Toast levels default to the constant `DEFAULT_LEVELS` (70, 90) and can be replaced by the `levels` option (up to 5). `ALERT_AT` (95) is always a level on top of those and gets the alert duration. Each is announced once per window per reset cycle. Do not write a level or duration as a bare number elsewhere.
+- Icon colors are fixed by `YELLOW_AT` (59) and `RED_AT` (89), independent of the `levels` setting. They stay different from the status line's 70 and 95 by Tim's decision (2026-11-13). Each window gets its own toast (a toast does not render a newline), and `showFiveHour` and `showSevenDay` turn a window off. Reset times follow the `timeFormat` setting.
+- The `/redline` command registers on `session.start` and is served by `command.run`. It only reads, and shows the result in a toast (normal duration) instead of chat text. The desktop app shows only the first of two toasts raised together (verified 2026-11-13), so there `toastEach` raises the second after the first times out, through `$.clock.after`.
+- Setting descriptions in `plugin.json` are short, written for the `/plugin` screen, and do not repeat the default. The README Settings table carries the defaults.
+- The `userConfig` defaults and limits in `plugin.json` must equal the constants in `register.js` (`DEFAULT_LEVELS` as the string "70, 90", and the duration constants). JSON cannot import them, so check both when changing either.
+- Build toast text only through `segment()` and `failureText()`, so the toast text cannot drift from the real format. Icon, label and percent are joined with non-breaking spaces, which did not stop bad wraps live, so each window gets its own toast and only a window with news is toasted.
+- The announcement state is saved with `$.store` under `windows` and merged on every reading, so reloads and second windows do not repeat toasts. Saved windows whose reset has passed are ignored.
+- `plugin.json` pins `version` 1.0.0 (2026-11-13). Bump it in every commit that changes the plugin folder and is pushed, or `claude plugin update` tells users they are current.
+- Functions that take `$` stay in `register.js`. The validator rejects passing `$` to a function imported from another file. Event names passed to `on` must be string literals.
+- Run `claude plugin validate ./claude-redline` after any change to the plugin folder.
+- Never read credential files or call undocumented usage endpoints without Tim's explicit say-so.
+
+## Comments
+Terse. A comment is one or two sentences, a pointer to what the code does or why. Anything longer (background, history, design reasoning, edge cases) goes in this file or `DESIGN.md`. This is a standing rule for every comment written from now on.
+
+## Commit style
+(Copied word for word from Tim's own configuration.)
+- Single-line commit summaries by default; avoid sprawling descriptions.
+- If a description is genuinely needed, keep it to a few single-sentence bullets, not a narrative.
+- Default to one commit per session unless changes are large enough to warrant splitting.
+- Never include co-author notes in commit messages.
+
+Commit messages are written in Tim's voice and describe the change, never the agent or the session. No trailers of any kind. Never commit or push without Tim's explicit yes, with one exception: at close-out the agent may commit and push `HANDOFF.md` alone, with a one-line message, and tell Tim afterward.
+
+Body rule: a body of short bullets is allowed only when the commit is one coherent change whose parts a single subject can't carry honestly (three or more separate parts, or a behavior change someone reading history later would need to know about). Anything smaller gets no body. A commit that bundles unrelated changes is split, not bulleted. Allowed trailers: none.
+
+There is no per-commit override. If the checks block a commit, split it or correct it. The agent never adds an override line to get a commit through.
+
+Commit and push autonomy (decided 2026-10-28, after the checks were verified): confirm every time. Ask Tim before every commit and every push. The checks still run on each one.
+
+## Handoff
+(The format below is copied word for word from Tim's own configuration.)
+
+Write it to Sentinel-Notes/HANDOFF.md if the project has a Sentinel-Notes/ folder, otherwise to HANDOFF.md in the project root, replacing any earlier version. Keep it under one page. Include:
+1. Current task and its status
+2. Files touched, with a one-line note on each change
+3. Next step, specific enough to start without re-reading the chat
+4. Open questions or decisions waiting on me
+5. Anything tried that failed, so it is not repeated
+
+Project override: here the handoff lives at `HANDOFF.md` in the project root even though `Sentinel-Notes/` exists, because `Sentinel-Notes/` is local-only and a remote session sees only committed files.
+
+- Rewrite it whenever the state of unfinished work changes (a step finishes, the plan changes, an attempt fails), not only at the end, so a session that ends without warning leaves a handoff at most one step behind.
+- Every commit that finishes or changes a step touches `HANDOFF.md` in that same commit, so the handoff is never behind the code. A commit that changes nothing about unfinished work (a typo fix, say) can leave it alone. Do not put a commit hash in the handoff, because the hash does not exist until the commit is made.
+- When a later session finishes the work it describes, clear it. A stale handoff is worse than none.
+- Anything in it that becomes settled moves to the file named in "Where information goes".
+- At the start of every new session, before answering the first message, read `HANDOFF.md` and the open items in `Sentinel-Notes/TODO.md` (if that folder exists on this machine), in that order. If a handoff exists, say briefly what it describes. Compare it with the working tree, and if there are uncommitted changes it does not mention, say so in the same line.
+
+## Sessions on other machines
+Tim sometimes runs sessions away from this computer. A remote session sees only committed files, so `CLAUDE.md`, `DESIGN.md` and `HANDOFF.md` are tracked and the rest of the notes are local. Anything a remote session writes is lost unless it is committed.
+
+## TODO and notes conventions
+- Finished `TODO.md` items move to the Done section. A finished design brief moves to `Sentinel-Notes/archive/`.
+- Every `TODO.md` entry is one line with one sentence. Anything longer becomes a `[issue]-design-brief.md` file and the entry links to it.
+- After finishing an item, name the strongest next item with a reason and start on it. Items carry no priority, effort or dependency data, so this is a judgment from the wording. Say so plainly, and let Tim redirect.
+- Updating `TODO.md` is part of finishing the work an item describes, not a step to remember afterward.
+- When any distinct task reaches a stopping point, mention the open backlog if nothing in it has been touched since before the task began. A short mention is enough, and skip it if it was already raised this session.
+
+## Keep docs in step (same commit)
+- `CLAUDE.md`: when a named constant, a hooked event, the set of `$` calls, the `usage.json` keys, a `userConfig` key, the plugin name or layout, or a convention changes.
+ call set, the `usage.json` keys, the saved state).
 - `README.md`: when toast text or levels, settings, install steps, the `$` call set, the minimum version or the license change. Re-quote the validator's output in the README if its `calls:` line changes.
 - `DESIGN.md`: when a hooked event is added or removed, the plugin starts using a new kind of capability, how or when `usage.json` is written changes, a new place to show output is added, or a new toast type or level is added.
 - `Sentinel-Notes/TODO.md`: move finished items to Done.

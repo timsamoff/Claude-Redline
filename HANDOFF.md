@@ -10,6 +10,8 @@ Redline 1.0.0 is pushed and ready for the directory. Tim approved the simpler ic
 - The plugin version stays 1.0.0 because nobody holds a 1.0.0 install yet. Bump it if one is ever installed with the old icon.
 
 ## Next step
+The directory form asks for a privacy policy. `PRIVACY.md` is written (uncommitted, needs Tim's yes to commit and push), linked from the README, and listed in `CLAUDE.md`. After the push, the URL for the form is https://github.com/timsamoff/Claude-Redline/blob/main/PRIVACY.md. Then the steps below.
+
 Commit and push the icon (needs Tim's yes), then Tim submits. After submission: watch for the portal's safety scan and policy review on the hooks module, and answer anything it asks. The submission links the repo root, so only committed files count. Keep the `calls:` line in the README current if the code changes.
 
 ## Open questions
